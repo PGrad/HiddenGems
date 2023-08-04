@@ -1,4 +1,4 @@
-name: Build react project and deploy to Github pages
+name: Build vue project and deploy to Github pages
 
 on:
   # Runs on pushes targeting the default branch

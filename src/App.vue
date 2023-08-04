@@ -10,7 +10,7 @@ const name = ref<string>('');
 
 const debounce = (fn: any, delay: number) => {
   let timeoutId: number;
-  return (...args) => {
+  return (...args: any[]) => {
     clearTimeout(timeoutId);
     timeoutId = setTimeout(() => fn(...args), delay);
   };
