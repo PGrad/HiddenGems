@@ -4,7 +4,7 @@ import Search from './components/Search.vue'
 import * as Api from "./api/api";
 
 const promptValue = ref('');
-const songs = ref<any[]>([]);
+const songs = ref<any[] | null>(null);
 const img = ref<string>('');
 const name = ref<string>('');
 
@@ -27,6 +27,7 @@ const debouncedLog =
     const topData = await Api.getSongs(value, 1, false);
     const artistId = topData.tracks.items[0].artists[0].id;
     const songData = await Api.getSongs(value, 10, true);
+    songs.value = [];
     songData.tracks.items.forEach((item: any) => {
       if (item.artists[0].id !== artistId) return;
 
@@ -105,12 +106,12 @@ watch(promptValue, async (value) => {
     <span class="first">H</span>idden <span class="second">G</span>ems
   </h1>
   <Search v-model:prompt-value="promptValue" />
-  <ul v-if="songs.length > 0" class="songs-table" >
+  <ul v-if="songs !== null && songs.length > 0" class="songs-table" >
     <h3 class="artist-q">How well do you know <span class="artist-name">{{ name }}</span>?</h3>
     <img :src="img" class="artist-img" />
     <li v-for="song in songs" :key="song" >
       <a class="song-link" :href="song.url" >{{ song.name }}</a>
     </li>
   </ul>
-  <p v-else>Too popular, normie...</p>
+  <p v-else-if="songs !== null">Too popular, normie...</p>
 </template>
