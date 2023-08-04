@@ -38,7 +38,6 @@ const debouncedLog =
     });
     songs.value = arr;
     const imgData = await Api.getArtist(artistId);
-    console.log(imgData);
     name.value = imgData.name;
     img.value = imgData.images[0].url;
   }, 1000);
@@ -53,6 +52,7 @@ const debouncedLog =
 } */
 
 watch(promptValue, async (value) => {
+  if (value === '') songs.value = null;
   debouncedLog(value);
 });
 
@@ -113,5 +113,5 @@ watch(promptValue, async (value) => {
       <a class="song-link" :href="song.url" >{{ song.name }}</a>
     </li>
   </ul>
-  <p v-else-if="songs !== null">Too popular, normie...</p>
+  <p v-else-if="songs !== null && promptValue !== ''">Too popular, normie...</p>
 </template>
