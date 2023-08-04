@@ -26,11 +26,17 @@ const debouncedLog =
     // the artist, and filter on their ID.
     const topData = await Api.getSongs(value, 1, false);
     const artistId = topData.tracks.items[0].artists[0].id;
-    const songData = await Api.getSongs(value, 10, true);
+    const songData = await Api.getSongs(value, 50, true);
     songs.value = [];
+    const songSet = new Set();
     songData.tracks.items.forEach((item: any) => {
       if (item.artists[0].id !== artistId) return;
 
+      // Some songs get added over and over
+      // in greatest hits and stuff, ignore those.
+      if (songSet.has(item.name)) return;
+
+      songSet.add(item.name);
       arr.push({
         name: item.name,
         url: item.external_urls.spotify
@@ -102,16 +108,19 @@ watch(promptValue, async (value) => {
 </style>
 
 <template>
-  <h1 class="title">
-    <span class="first">H</span>idden <span class="second">G</span>ems
-  </h1>
-  <Search v-model:prompt-value="promptValue" />
-  <ul v-if="songs !== null && songs.length > 0" class="songs-table" >
-    <h3 class="artist-q">How well do you know <span class="artist-name">{{ name }}</span>?</h3>
-    <img :src="img" class="artist-img" />
-    <li v-for="song in songs" :key="song" >
-      <a class="song-link" :href="song.url" >{{ song.name }}</a>
-    </li>
-  </ul>
-  <p v-else-if="songs !== null && promptValue !== ''">Too popular, normie...</p>
+  <main class=".main">
+    <h1 class="title">
+      <span class="first">H</span>idden <span class="second">G</span>ems
+    </h1>
+    <Search v-model:prompt-value="promptValue" />
+    <ul v-if="songs !== null && songs.length > 0" class="songs-table" >
+      <h3 class="artist-q">How well do you know <span class="artist-name">{{ name }}</span>?</h3>
+      <img :src="img" class="artist-img" />
+      <li v-for="song in songs" :key="song" >
+        <a class="song-link" target="_blank" :href="song.url" >{{ song.name }}</a>
+      </li>
+    </ul>
+    <p v-else-if="songs !== null && promptValue !== ''">Too popular, normie...</p>
+  </main>
+  <footer class="footer">Powered by Spotify Web API.</footer>
 </template>
