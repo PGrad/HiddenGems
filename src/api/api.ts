@@ -2,6 +2,9 @@
 export async function getAccessToken(): Promise<string> {
     const CLIENT_ID = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
     const CLIENT_SECRET = import.meta.env.VITE_SPOTIFY_CLIENT_SECRET;
+    if (!CLIENT_ID || !CLIENT_SECRET)
+        throw new Error("client id or client secret is not defined");
+
     const formData = new URLSearchParams();
     formData.append("grant_type", "client_credentials");
     formData.append("client_id", CLIENT_ID);
