@@ -37,7 +37,15 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-      - name: npm install and build
+      - name: create .env.local
+        shell: bash
+        env:
+          CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
+        run: |
+          echo "VITE_SPOTIFY_CLIENT_ID=$CLIENT_ID" > .env.local
+          echo "VITE_SPOTIFY_CLIENT_SECRET=$CLIENT_SECRET" > .env.local
+      - name: yarn install and build
         run: |
           yarn install
           yarn build
