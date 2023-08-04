@@ -16,8 +16,9 @@ const debounce = (fn: any, delay: number) => {
   };
 };
 
-const debouncedLog =
+const debouncedSearch =
   debounce(async (value: any) => {
+    if (promptValue.value === '') return; // do nothing.
     const arr: any = [];
     // Spotify's API can't exactly match artists,
     // and if we search for hipster tracks it will
@@ -58,8 +59,11 @@ const debouncedLog =
 } */
 
 watch(promptValue, async (value) => {
-  if (value === '') songs.value = null;
-  debouncedLog(value);
+  if (value === '') {
+    songs.value = null;
+    return; // do nothing.
+  }
+  debouncedSearch(value);
 });
 
 </script>
@@ -112,6 +116,7 @@ watch(promptValue, async (value) => {
     <h1 class="title">
       <span class="first">H</span>idden <span class="second">G</span>ems
     </h1>
+    <h3 v-if="songs === null">Find hidden gems from your favorite artists!</h3>
     <Search v-model:prompt-value="promptValue" />
     <ul v-if="songs !== null && songs.length > 0" class="songs-table" >
       <h3 class="artist-q">How well do you know <span class="artist-name">{{ name }}</span>?</h3>
