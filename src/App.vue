@@ -102,7 +102,7 @@ watch(promptValue, async (value) => {
 
 <template>
   <h1 class="title">
-    <span class="first">R</span>are <span class="second">M</span>usic
+    <span class="first">H</span>idden <span class="second">G</span>ems
   </h1>
   <Search v-model:prompt-value="promptValue" />
   <ul v-if="songs.length > 0" class="songs-table" >
