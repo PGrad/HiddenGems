@@ -40,8 +40,8 @@ jobs:
       - name: npm install and build
         run: |
           yarn install
-          yarn run build
-          mv build _site
+          yarn build
+          mv dist _site
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
 
