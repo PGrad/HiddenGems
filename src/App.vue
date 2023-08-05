@@ -82,13 +82,13 @@ watch(promptValue, async (value) => {
 
   @media (prefers-color-scheme: dark) {
     .songs-table {
-      background-color: rgba(0, 0, 0, .4);
+      background: linear-gradient(rgba(0, 0, 0, .4), grey);
     }
   }
 
   @media (prefers-color-scheme: light) {
     .songs-table {
-      background-color: #8400ff;
+      background: linear-gradient(#8400ff, #9198e5);
     }
   }
 
