@@ -93,7 +93,6 @@ watch(promptValue, async (value) => {
   }
 
   .songs-table {
-    border-radius: 5%;
     list-style-type: none;
     display: flex;
     flex-direction: column;
