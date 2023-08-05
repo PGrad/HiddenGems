@@ -7,6 +7,7 @@ const promptValue = ref('');
 const songs = ref<any[] | null>(null);
 const img = ref<string>('');
 const name = ref<string>('');
+const errorMsg = ref<string>('Too popular, normie...');
 
 const debounce = (fn: any, delay: number) => {
   let timeoutId: number;
@@ -26,7 +27,13 @@ const debouncedSearch =
     // The solution is to find the top track, which is probably
     // the artist, and filter on their ID.
     const topData = await Api.getSongs(value, 1, false);
-    const artistId = topData.tracks.items[0].artists[0].id;
+    const artistId = topData.tracks.items[0]?.artists[0]?.id;
+    if (artistId === undefined) {
+      songs.value = [];
+      errorMsg.value = 'I don\'t even know who that is, hipster...';
+      return;
+    }
+    errorMsg.value = 'Too popular, normie...';
     const songData = await Api.getSongs(value, 50, true);
     songs.value = [];
     const songSet = new Set();
@@ -161,7 +168,7 @@ watch(promptValue, async (value) => {
         <a class="song-link" target="_blank" :href="song.url" >{{ song.name }}</a>
       </li>
     </ul>
-    <p v-else-if="songs !== null && promptValue !== ''">Too popular, normie...</p>
+    <p v-else-if="songs !== null && promptValue !== ''">{{ errorMsg }}</p>
   </main>
   <footer class="footer">Powered by Spotify Web API.<br/>Logo courtesy of wiki.hypixel.net.</footer>
 </template>
