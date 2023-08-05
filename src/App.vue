@@ -69,6 +69,10 @@ watch(promptValue, async (value) => {
 </script>
 
 <style scoped>
+  .title {
+    margin-top: 0;
+  }
+
   .songs-table {
     background-color: rgba(0, 0, 0, .4);
     border-radius: 5%;
@@ -113,6 +117,7 @@ watch(promptValue, async (value) => {
 
 <template>
   <main class=".main">
+    <img src="./assets/logo.gif" class="logo" />
     <h1 class="title">
       <span class="first">H</span>idden <span class="second">G</span>ems
     </h1>
@@ -127,5 +132,5 @@ watch(promptValue, async (value) => {
     </ul>
     <p v-else-if="songs !== null && promptValue !== ''">Too popular, normie...</p>
   </main>
-  <footer class="footer">Powered by Spotify Web API.</footer>
+  <footer class="footer">Powered by Spotify Web API.<br/>Logo courtesy of wiki.hypixel.net.</footer>
 </template>
