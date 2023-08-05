@@ -80,6 +80,25 @@ watch(promptValue, async (value) => {
     margin-top: 0;
   }
 
+  .main {
+    display: flex;
+    flex-direction: column;
+    gap: 2em
+  }
+
+  @media (min-width: 1024px) {
+    .songs-list {
+      column-count: 2;
+      column-width: 10em;
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .songs-list {
+      column-count: 3;
+    }
+  }
+
   @media (prefers-color-scheme: dark) {
     .songs-table {
       background: linear-gradient(rgba(0, 0, 0, .4), grey);
@@ -93,12 +112,15 @@ watch(promptValue, async (value) => {
   }
 
   .songs-table {
-    list-style-type: none;
     display: flex;
     flex-direction: column;
     text-align: left;
     padding: 2em;
     gap: 1em;
+  }
+
+  .songs-list {
+    list-style-type: decimal;
   }
 
   @media (prefers-color-scheme: dark) {
@@ -150,24 +172,32 @@ watch(promptValue, async (value) => {
   .second {
     color: blueviolet;
   }
+
+  .footer {
+    margin-top: 2em;
+  }
 </style>
 
 <template>
-  <main class=".main">
-    <img src="./assets/logo.gif" class="logo" />
-    <h1 class="title">
-      <span class="first">H</span>idden <span class="second">G</span>ems
-    </h1>
-    <h3 v-if="songs === null">Find hidden gems from your favorite artists!</h3>
-    <Search v-model:prompt-value="promptValue" />
-    <ul v-if="songs !== null && songs.length > 0" class="songs-table" >
+  <main class="main">
+    <div class="search">
+      <img src="./assets/logo.gif" class="logo" />
+      <h1 class="title">
+        <span class="first">H</span>idden <span class="second">G</span>ems
+      </h1>
+      <h3 v-if="songs === null">Find hidden gems from your favorite artists!</h3>
+      <Search v-model:prompt-value="promptValue" />
+    </div>
+    <div v-if="songs !== null && songs.length > 0" class="songs-table" >
       <h3 class="artist-q">How well do you know <span class="artist-name">{{ name }}</span>?</h3>
       <img :src="img" class="artist-img" />
-      <li v-for="song in songs" :key="song" >
-        <a class="song-link" target="_blank" :href="song.url" >{{ song.name }}</a>
-      </li>
-    </ul>
-    <p v-else-if="songs !== null && promptValue !== ''">{{ errorMsg }}</p>
+      <ul class="songs-list">
+        <li v-for="song in songs" :key="song" >
+          <a class="song-link" target="_blank" :href="song.url" >{{ song.name }}</a>
+        </li>
+      </ul>
+    </div>
+    <p class="errMsg" v-else-if="songs !== null && promptValue !== ''">{{ errorMsg }}</p>
   </main>
   <footer class="footer">Powered by Spotify Web API.<br/>Logo courtesy of wiki.hypixel.net.</footer>
 </template>
