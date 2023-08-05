@@ -73,8 +73,19 @@ watch(promptValue, async (value) => {
     margin-top: 0;
   }
 
+  @media (prefers-color-scheme: dark) {
+    .songs-table {
+      background-color: rgba(0, 0, 0, .4);
+    }
+  }
+
+  @media (prefers-color-scheme: light) {
+    .songs-table {
+      background-color: #8400ff;
+    }
+  }
+
   .songs-table {
-    background-color: rgba(0, 0, 0, .4);
     border-radius: 5%;
     list-style-type: none;
     display: flex;
@@ -84,10 +95,21 @@ watch(promptValue, async (value) => {
     gap: 1em;
   }
 
+  @media (prefers-color-scheme: dark) {
+    .song-link {
+      color: greenyellow;
+    }
+  }
+
+  @media (prefers-color-scheme: light) {
+    .song-link {
+      color: #00FF84;
+    }
+  }
+
   .song-link {
-    color: greenyellow;
     border-bottom: solid white 1px;
-    font-size: 20px;
+    font-size: 24px;
   }
 
   .artist-img {
@@ -100,10 +122,19 @@ watch(promptValue, async (value) => {
   .artist-q {
     color: white;
     text-align: center;
+    font-size: 24px;
   }
 
-  .artist-name {
-    color: red;
+  @media (prefers-color-scheme: dark) {
+    .artist-name {
+      color: red;
+    }
+  }
+
+  @media (prefers-color-scheme: light) {
+    .artist-name {
+      color: orange;
+    }
   }
 
   .first {
