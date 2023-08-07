@@ -31,12 +31,13 @@ async function generateCodeChallenge(codeVerifier: string): Promise<string> {
 export async function getAuthUrl(): Promise<string> {
   const codeVerifier = generateRandomString(128);
   const codeChallenge = await generateCodeChallenge(codeVerifier);
+  const HOST = import.meta.env.VITE_HOST;
 
   const params = new URLSearchParams({
     response_type: 'code',
     client_id: import.meta.env.VITE_SPOTIFY_CLIENT_ID,
     scope: 'playlist-modify-private',
-    redirect_uri: `http://localhost:5173`,
+    redirect_uri: HOST,
     code_challenge_method: 'S256',
     code_challenge: codeChallenge,
   });
@@ -67,6 +68,7 @@ export interface AuthToken {
 export async function getAccessToken(token: AuthToken): Promise<[string, string]> {
     const CLIENT_ID = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
     const CLIENT_SECRET = import.meta.env.VITE_SPOTIFY_CLIENT_SECRET;
+    const HOST = import.meta.env.VITE_HOST;
     if (!CLIENT_ID || !CLIENT_SECRET)
         throw new Error("client id or client secret is not defined");
 
@@ -74,7 +76,7 @@ export async function getAccessToken(token: AuthToken): Promise<[string, string]
     if (token.type === 'auth_code') {
         formData.append("grant_type", "authorization_code");
         formData.append("code", token.access_token);
-        formData.append("redirect_uri", "http://localhost:5173");
+        formData.append("redirect_uri", HOST);
         formData.append("code_verifier", localStorage.getItem('verifier') || "");
         formData.append("client_id", CLIENT_ID);
     } else if (token.type === 'refresh_token') {
