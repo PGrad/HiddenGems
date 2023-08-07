@@ -167,7 +167,6 @@ async function makePlaylist() {
     }
   }
 
-
   .songs-table {
     display: flex;
     flex-direction: column;
@@ -238,16 +237,17 @@ async function makePlaylist() {
       <h3 class="m-2 text-lg" v-if="songs === null">Find hidden gems from your favorite artists!</h3>
       <Search v-model:prompt-value="promptValue" />
     </div>
-    <div v-if="songs !== null && songs.length > 0" class="songs-table items-center bg-gradient-to-r from-purple-700 to-slate-400 dark:from-slate-500 dark:to-slate-400" >
+    <div v-if="songs !== null && songs.length > 0" class="songs-table items-center bg-gradient-to-r from-purple-700 to-slate-600 dark:from-slate-500 dark:to-slate-600" >
       <h3 class="artist-q">How well do you know <span class="artist-name">{{ name }}</span>?</h3>
       <img :src="img" class="artist-img" />
-      <t-button @click="makePlaylist" v-if="playlistUrl === null" class="btn btn-green-shadow text-lg">
+      <t-button @click="makePlaylist" v-if="playlistUrl === null" class="btn btn-green-shadow text-lg flex items-center justify-between gap-2">
+        <img src="./assets/spotify_icon.svg" class="w-10" />
         {{ loggedIn ? 'Make a playlist' : 'Login to Make a Playlist!'}}
       </t-button>
       <a class="playlist-link anchor-no-highlight btn btn-green-to-blue text-lg" v-if="playlistUrl !== null" target="_blank" :href="playlistUrl">Playlist</a>
       <ul class="songs-list">
         <li v-for="song in songs" :key="song" >
-          <a class="song-link gradient-text" target="_blank" :href="song.url" >{{ song.name }}</a>
+          <a class="song-link text-green-400 hover:text-white" target="_blank" :href="song.url" >{{ song.name }}</a>
         </li>
       </ul>
     </div>
