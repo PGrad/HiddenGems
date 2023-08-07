@@ -17,7 +17,7 @@ const value = computed({
 </script>
 
 <template>
-  <input class="artist-input" v-model="value" placeholder="search for your favorite artist..." />
+  <input class="artist-input bg-purple-200 dark:bg-slate-500" v-model="value" placeholder="search for your favorite artist..." />
 </template>
 
 <style scoped>

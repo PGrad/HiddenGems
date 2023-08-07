@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .btn {
+    @apply font-bold py-2 px-4 rounded w-fit;
+  }
+  .btn-green-shadow {
+    @apply text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 shadow-lg shadow-green-500/50 dark:shadow-lg dark:shadow-green-800/80 font-medium rounded-lg text-sm px-5 py-2.5 text-center mr-2 mb-2;
+  }
+  .btn-green-shadow:hover:focus {
+    @apply ring-4;
+  }
+  .btn-green-shadow:hover {
+    @apply cursor-pointer bg-gradient-to-r from-green-500 via-green-600 to-green-700;
+  }
+  .btn-green-shadow:focus {
+    @apply ring-4 ring-green-300 dark:ring-green-800 outline-none;
+  }
+  .anchor-no-highlight {
+    @apply no-underline;
+  }
+  .btn-green-to-blue {
+    @apply text-white bg-gradient-to-br from-orange-400 to-purple-600 font-medium rounded-lg text-sm px-5 py-2.5 text-center mr-2 mb-2;
+  }
+  .btn-green-to-blue:hover {
+    @apply bg-gradient-to-bl cursor-pointer text-white;
+  }
+  .btn-green-to-blue:focus {
+    @apply ring-4 outline-none ring-green-200 dark:ring-green-800;
+  }
+  .gradient-text {
+    @apply font-extrabold text-transparent text-8xl bg-clip-text bg-gradient-to-r from-green-500 to-stone-300;
+  }
+  .gradient-text:hover {
+    @apply text-white;
+  }
+}

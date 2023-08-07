@@ -3,6 +3,7 @@ import { onMounted, ref, watch } from 'vue';
 import Search from './components/Search.vue'
 import * as Api from "./api/api";
 import * as Auth from "./api/auth";
+import "./App.css";
 
 const promptValue = ref('');
 const songs = ref<any[] | null>(null);
@@ -147,10 +148,6 @@ async function makePlaylist() {
 </script>
 
 <style scoped>
-  .title {
-    margin-top: 0;
-  }
-
   .main {
     display: flex;
     flex-direction: column;
@@ -164,23 +161,12 @@ async function makePlaylist() {
     }
   }
 
-  @media (min-width: 1280px) {
+  @media (min-width: 1400px) {
     .songs-list {
       column-count: 3;
     }
   }
 
-  @media (prefers-color-scheme: dark) {
-    .songs-table {
-      background-color: rgb(105, 105, 105);
-    }
-  }
-
-  @media (prefers-color-scheme: light) {
-    .songs-table {
-      background: linear-gradient(#8400ff, #9198e5);
-    }
-  }
 
   .songs-table {
     display: flex;
@@ -194,21 +180,13 @@ async function makePlaylist() {
     list-style-type: decimal;
   }
 
-  @media (prefers-color-scheme: dark) {
-    .song-link {
-      color: greenyellow;
-    }
-  }
-
-  @media (prefers-color-scheme: light) {
-    .song-link {
-      color: #00FF84;
-    }
-  }
-
   .song-link {
     border-bottom: solid white 1px;
-    font-size: 24px;
+    font-size: 22px;
+  }
+
+  .song-list li {
+    width: 10em;
   }
 
   .artist-img {
@@ -226,7 +204,7 @@ async function makePlaylist() {
 
   @media (prefers-color-scheme: dark) {
     .artist-name {
-      color: red;
+      color: orange;
     }
   }
 
@@ -248,41 +226,28 @@ async function makePlaylist() {
     margin-top: 2em;
   }
 
-  .playlist-link {
-    color: black;
-    text-align: center;
-    font-size: 16px;
-    color: green;
-    background-color: white;
-    padding: 1em;
-    width: fit-content;
-    border-radius: 5px;
-    align-self: center;
-  }
-
-  
 </style>
 
 <template>
   <main class="main">
-    <div class="search">
-      <img src="./assets/logo.gif" class="logo" />
-      <h1 class="title">
+    <div class="search flex flex-col items-center">
+      <img src="./assets/logo.gif" class="logo w-60" />
+      <h1 class="text-5xl m-2">
         <span class="first">H</span>idden <span class="second">G</span>ems
       </h1>
-      <h3 v-if="songs === null">Find hidden gems from your favorite artists!</h3>
+      <h3 class="m-2 text-lg" v-if="songs === null">Find hidden gems from your favorite artists!</h3>
       <Search v-model:prompt-value="promptValue" />
     </div>
-    <div v-if="songs !== null && songs.length > 0" class="songs-table" >
+    <div v-if="songs !== null && songs.length > 0" class="songs-table items-center bg-gradient-to-r from-purple-700 to-slate-400 dark:from-slate-500 dark:to-slate-400" >
       <h3 class="artist-q">How well do you know <span class="artist-name">{{ name }}</span>?</h3>
       <img :src="img" class="artist-img" />
-      <button @click="makePlaylist" v-if="playlistUrl === null" class="">
+      <t-button @click="makePlaylist" v-if="playlistUrl === null" class="btn btn-green-shadow text-lg">
         {{ loggedIn ? 'Make a playlist' : 'Login to Make a Playlist!'}}
-      </button>
-      <a class="playlist-link" v-if="playlistUrl !== null" target="_blank" :href="playlistUrl">Playlist</a>
+      </t-button>
+      <a class="playlist-link anchor-no-highlight btn btn-green-to-blue text-lg" v-if="playlistUrl !== null" target="_blank" :href="playlistUrl">Playlist</a>
       <ul class="songs-list">
         <li v-for="song in songs" :key="song" >
-          <a class="song-link" target="_blank" :href="song.url" >{{ song.name }}</a>
+          <a class="song-link gradient-text" target="_blank" :href="song.url" >{{ song.name }}</a>
         </li>
       </ul>
     </div>
