@@ -10,6 +10,7 @@ const img = ref<string>('');
 const name = ref<string>('');
 const errorMsg = ref<string>('Too popular, normie...');
 const loggedIn = ref<boolean>(false);
+const playlistUrl = ref<string | null>(null);
 
 async function setRefreshToken(code: string): Promise<string> {
   if (!code)
@@ -52,7 +53,6 @@ onMounted(() => {
   }
   const r_token = localStorage.getItem('r_token');
   const auth_code = Auth.getAuthCode();
-  console.log("yes?", auth_code, r_token);
   if (auth_code) {
     loggedIn.value = true;
   } else if (r_token) {
@@ -70,6 +70,7 @@ const debounce = (fn: any, delay: number) => {
 
 const debouncedSearch =
   debounce(async (value: any) => {
+    playlistUrl.value = null;
     if (promptValue.value === '') return; // do nothing.
     const arr: any = [];
     // Spotify's API can't exactly match artists,
@@ -99,7 +100,8 @@ const debouncedSearch =
       songSet.add(item.name);
       arr.push({
         name: item.name,
-        url: item.external_urls.spotify
+        url: item.external_urls.spotify,
+        uri: item.uri,
       });
     });
     songs.value = arr;
@@ -127,9 +129,19 @@ watch(promptValue, async (value) => {
 
 async function makePlaylist() {
   const auth_code = Auth.getAuthCode();
-  if (!auth_code) {
+  const r_token = localStorage.getItem('r_token');
+  if (!auth_code && !r_token) {
     localStorage.setItem('query', promptValue.value);
     window.location.href = await Auth.getAuthUrl();
+  }
+  else {
+    const token = await getAccessToken();
+    const user = await Api.getUser(token);
+    const playlist = await Api.createPlaylist(
+      name.value, user, token);
+    const uris = songs.value!.map((song: any) => song.uri);
+    await Api.addSongsToPlaylist(playlist.id, uris, token);
+    playlistUrl.value = playlist.external_url;
   }
 }
 </script>
@@ -235,6 +247,20 @@ async function makePlaylist() {
   .footer {
     margin-top: 2em;
   }
+
+  .playlist-link {
+    color: black;
+    text-align: center;
+    font-size: 16px;
+    color: green;
+    background-color: white;
+    padding: 1em;
+    width: fit-content;
+    border-radius: 5px;
+    align-self: center;
+  }
+
+  
 </style>
 
 <template>
@@ -250,9 +276,10 @@ async function makePlaylist() {
     <div v-if="songs !== null && songs.length > 0" class="songs-table" >
       <h3 class="artist-q">How well do you know <span class="artist-name">{{ name }}</span>?</h3>
       <img :src="img" class="artist-img" />
-      <button @click="makePlaylist">
+      <button @click="makePlaylist" v-if="playlistUrl === null" class="">
         {{ loggedIn ? 'Make a playlist' : 'Login to Make a Playlist!'}}
       </button>
+      <a class="playlist-link" v-if="playlistUrl !== null" target="_blank" :href="playlistUrl">Playlist</a>
       <ul class="songs-list">
         <li v-for="song in songs" :key="song" >
           <a class="song-link" target="_blank" :href="song.url" >{{ song.name }}</a>

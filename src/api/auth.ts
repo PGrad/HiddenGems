@@ -23,6 +23,8 @@ async function generateCodeChallenge(codeVerifier: string): Promise<string> {
   const digest = await window
     .crypto.subtle.digest('SHA-256', data);
 
+  localStorage.setItem('verifier', codeVerifier);
+
   return base64encode(digest);
 }
 
@@ -72,6 +74,9 @@ export async function getAccessToken(token: AuthToken): Promise<[string, string]
     if (token.type === 'auth_code') {
         formData.append("grant_type", "authorization_code");
         formData.append("code", token.access_token);
+        formData.append("redirect_uri", "http://localhost:5173");
+        formData.append("code_verifier", localStorage.getItem('verifier') || "");
+        formData.append("client_id", CLIENT_ID);
     } else if (token.type === 'refresh_token') {
         formData.append("grant_type", "refresh_token");
         formData.append("refresh_token", token.access_token);
