@@ -1,13 +1,64 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import Search from './components/Search.vue'
 import * as Api from "./api/api";
+import * as Auth from "./api/auth";
 
 const promptValue = ref('');
 const songs = ref<any[] | null>(null);
 const img = ref<string>('');
 const name = ref<string>('');
 const errorMsg = ref<string>('Too popular, normie...');
+const loggedIn = ref<boolean>(false);
+
+async function setRefreshToken(code: string): Promise<string> {
+  if (!code)
+    throw new Error('No auth code found');
+  const token = await Auth.getAccessToken({
+    access_token: code,
+    type: 'auth_code'
+  });
+  localStorage.setItem('r_token', token[1]);
+  return token[1];
+}
+
+async function getAccessToken(): Promise<string> {
+  let r_token = localStorage.getItem('r_token');
+  const code = Auth.getAuthCode();
+  if (code && !r_token)
+    r_token = await setRefreshToken(code);
+
+  let new_token;
+  if (r_token) {
+    new_token = await Auth.getAccessToken({
+      access_token: r_token,
+      type: 'refresh_token'
+    });
+    localStorage.setItem('r_token', new_token[1]);
+  } else {
+    new_token = await Auth.getAccessToken({
+      access_token: '',
+      type: 'none'
+    });
+  }
+  return new_token[0];
+}
+
+onMounted(() => {
+  const query = localStorage.getItem('query');
+  if (query) {
+    promptValue.value = query;
+    localStorage.removeItem('query');
+  }
+  const r_token = localStorage.getItem('r_token');
+  const auth_code = Auth.getAuthCode();
+  console.log("yes?", auth_code, r_token);
+  if (auth_code) {
+    loggedIn.value = true;
+  } else if (r_token) {
+    loggedIn.value = true;
+  }
+});
 
 const debounce = (fn: any, delay: number) => {
   let timeoutId: number;
@@ -26,7 +77,8 @@ const debouncedSearch =
     // probably be artists that the user is not looking for.
     // The solution is to find the top track, which is probably
     // the artist, and filter on their ID.
-    const topData = await Api.getSongs(value, 1, false);
+    const token = await getAccessToken();
+    const topData = await Api.getSongs(value, 1, false, token);
     const artistId = topData.tracks.items[0]?.artists[0]?.id;
     if (artistId === undefined) {
       songs.value = [];
@@ -34,7 +86,7 @@ const debouncedSearch =
       return;
     }
     errorMsg.value = 'Too popular, normie...';
-    const songData = await Api.getSongs(value, 50, true);
+    const songData = await Api.getSongs(value, 50, true, token);
     songs.value = [];
     const songSet = new Set();
     songData.tracks.items.forEach((item: any) => {
@@ -51,7 +103,7 @@ const debouncedSearch =
       });
     });
     songs.value = arr;
-    const imgData = await Api.getArtist(artistId);
+    const imgData = await Api.getArtist(artistId, token);
     name.value = imgData.name;
     img.value = imgData.images[0].url;
   }, 1000);
@@ -73,6 +125,13 @@ watch(promptValue, async (value) => {
   debouncedSearch(value);
 });
 
+async function makePlaylist() {
+  const auth_code = Auth.getAuthCode();
+  if (!auth_code) {
+    localStorage.setItem('query', promptValue.value);
+    window.location.href = await Auth.getAuthUrl();
+  }
+}
 </script>
 
 <style scoped>
@@ -101,7 +160,7 @@ watch(promptValue, async (value) => {
 
   @media (prefers-color-scheme: dark) {
     .songs-table {
-      background: linear-gradient(rgba(0, 0, 0, .4), grey);
+      background-color: rgb(105, 105, 105);
     }
   }
 
@@ -191,6 +250,9 @@ watch(promptValue, async (value) => {
     <div v-if="songs !== null && songs.length > 0" class="songs-table" >
       <h3 class="artist-q">How well do you know <span class="artist-name">{{ name }}</span>?</h3>
       <img :src="img" class="artist-img" />
+      <button @click="makePlaylist">
+        {{ loggedIn ? 'Make a playlist' : 'Login to Make a Playlist!'}}
+      </button>
       <ul class="songs-list">
         <li v-for="song in songs" :key="song" >
           <a class="song-link" target="_blank" :href="song.url" >{{ song.name }}</a>
