@@ -237,7 +237,7 @@ async function makePlaylist() {
       <h3 class="m-2 text-lg" v-if="songs === null">Find hidden gems from your favorite artists!</h3>
       <Search v-model:prompt-value="promptValue" />
     </div>
-    <div v-if="songs !== null && songs.length > 0" class="songs-table items-center bg-gradient-to-r from-purple-700 to-slate-600 dark:from-slate-500 dark:to-slate-600" >
+    <div v-if="songs !== null && songs.length > 0" class="songs-table items-center bg-gradient-to-r from-purple-700 to-slate-600 dark:from-slate-500 dark:via-slate-600 dark:to-purple-900" >
       <h3 class="artist-q">How well do you know <span class="artist-name">{{ name }}</span>?</h3>
       <img :src="img" class="artist-img" />
       <t-button @click="makePlaylist" v-if="playlistUrl === null" class="btn btn-green-shadow text-lg flex items-center justify-between gap-2">
