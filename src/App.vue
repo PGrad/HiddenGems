@@ -110,6 +110,7 @@ const debouncedSearch =
         name: item.name,
         url: item.external_urls.spotify,
         uri: item.uri,
+        img: item.album.images[0].url,
       });
     });
     songs.value = arr;
@@ -182,7 +183,10 @@ async function makePlaylist() {
   }
 
   .songs-list {
+    display: flex;
     list-style-type: decimal;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
   }
 
   .song-link {
@@ -253,8 +257,9 @@ async function makePlaylist() {
       </button>
       <a class="playlist-link anchor-no-highlight btn btn-green-to-blue text-lg" v-if="playlistUrl !== null" target="_blank" :href="playlistUrl">Playlist</a>
       <ul class="songs-list">
-        <li v-for="song in songs" :key="song" >
-          <a class="song-link text-green-400 hover:text-white" target="_blank" :href="song.url" >{{ song.name }}</a>
+        <li v-for="song in songs" :key="song" class="flex gap-2 mt-2 items-center bg-slate-100 dark:bg-slate-800 p-2 pl-3 rounded-md" >
+          <img :src="song.img" class="w-10 inline-block h-fit" />
+          <a class="song-link anchor-no-highlight text-green-400 hover:text-white" target="_blank" :href="song.url" >{{ song.name }}</a>
         </li>
       </ul>
     </div>
