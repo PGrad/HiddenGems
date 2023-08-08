@@ -48,7 +48,19 @@ export async function createPlaylist(artist: string, id: string, token: string) 
             })
         });
     const json = await data.json();
+
     return { id: json["id"], uri: json["uri"], external_url: json["external_urls"]["spotify"] };
+}
+
+export async function getPlaylist(id: string, token: string) {
+    const data = await fetch(`https://api.spotify.com/v1/playlists/${id}`,
+        {
+            headers: {
+                "Authorization": `Bearer ${token}`,
+            },
+        });
+    const json = await data.json();
+    return { img: json["images"][0]["url"] };
 }
 
 export async function addSongsToPlaylist(playlist_id: string, songs: string[], token: string) {
