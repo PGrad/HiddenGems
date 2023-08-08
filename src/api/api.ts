@@ -21,7 +21,7 @@ export async function getArtist(id: string, token: string) {
     return json;
 }
 
-export async function getUser(token: string): Promise<string> {
+export async function getUser(token: string): Promise<[string, string]> {
     const data = await fetch(`https://api.spotify.com/v1/me`,
         {
             headers: {
@@ -29,7 +29,8 @@ export async function getUser(token: string): Promise<string> {
             },
         });
     const json = await data.json();
-    return json["id"];
+    const img = json["images"].length > 0 ? json["images"][0]["url"] : null;
+    return [json["id"], img];
 }
 
 export async function createPlaylist(artist: string, id: string, token: string) {

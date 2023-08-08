@@ -12,6 +12,8 @@ const name = ref<string>('');
 const errorMsg = ref<string>('Too popular, normie...');
 const loggedIn = ref<boolean>(false);
 const playlistUrl = ref<string | null>(null);
+const avatarUrl = ref<string | null>(null);
+const userId = ref<string | null>(null);
 
 async function setRefreshToken(code: string): Promise<string> {
   if (!code)
@@ -46,7 +48,7 @@ async function getAccessToken(): Promise<string> {
   return new_token[0];
 }
 
-onMounted(() => {
+onMounted(async () => {
   const query = localStorage.getItem('query');
   if (query) {
     promptValue.value = query;
@@ -58,6 +60,11 @@ onMounted(() => {
     loggedIn.value = true;
   } else if (r_token) {
     loggedIn.value = true;
+  }
+  if (loggedIn.value) {
+    const [id, img] = await Api.getUser(await getAccessToken());
+    userId.value = id;
+    avatarUrl.value = img;
   }
 });
 
@@ -135,11 +142,10 @@ async function makePlaylist() {
     localStorage.setItem('query', promptValue.value);
     window.location.href = await Auth.getAuthUrl();
   }
-  else {
+  else if (userId.value) {
     const token = await getAccessToken();
-    const user = await Api.getUser(token);
     const playlist = await Api.createPlaylist(
-      name.value, user, token);
+      name.value, userId.value, token);
     const uris = songs.value!.map((song: any) => song.uri);
     await Api.addSongsToPlaylist(playlist.id, uris, token);
     playlistUrl.value = playlist.external_url;
@@ -237,13 +243,14 @@ async function makePlaylist() {
       <h3 class="m-2 text-lg" v-if="songs === null">Find hidden gems from your favorite artists!</h3>
       <Search v-model:prompt-value="promptValue" />
     </div>
-    <div v-if="songs !== null && songs.length > 0" class="songs-table items-center bg-gradient-to-r from-purple-700 to-slate-600 dark:from-slate-500 dark:via-slate-600 dark:to-purple-900" >
+    <div v-if="songs !== null && songs.length > 0" class="songs-table items-center bg-gradient-to-r from-purple-700 to-slate-500 dark:from-slate-500 dark:via-slate-600 dark:to-purple-900" >
       <h3 class="artist-q">How well do you know <span class="artist-name">{{ name }}</span>?</h3>
       <img :src="img" class="artist-img" />
-      <t-button @click="makePlaylist" v-if="playlistUrl === null" class="btn btn-green-shadow text-lg flex items-center justify-between gap-2">
-        <img src="./assets/spotify_icon.svg" class="w-10" />
+      <button @click="makePlaylist" v-if="playlistUrl === null" class="btn btn-green-shadow text-lg flex items-center justify-between gap-3">
+        <img v-if="!loggedIn || avatarUrl === null" src="./assets/spotify_icon.svg" class="w-10" />
+        <img v-else :src="avatarUrl" class="w-10 rounded-full" />
         {{ loggedIn ? 'Make a playlist' : 'Login to Make a Playlist!'}}
-      </t-button>
+      </button>
       <a class="playlist-link anchor-no-highlight btn btn-green-to-blue text-lg" v-if="playlistUrl !== null" target="_blank" :href="playlistUrl">Playlist</a>
       <ul class="songs-list">
         <li v-for="song in songs" :key="song" >
