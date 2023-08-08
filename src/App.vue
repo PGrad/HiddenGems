@@ -253,7 +253,7 @@ async function makePlaylist() {
       <button @click="makePlaylist" v-if="playlistUrl === null" class="btn btn-green-shadow text-lg flex items-center justify-between gap-2">
         <img v-if="!loggedIn || avatarUrl === null" src="./assets/spotify_icon.svg" class="w-10" />
         <img v-else :src="avatarUrl" class="w-10 rounded-full" />
-        {{ loggedIn ? 'Make a playlist' : 'Login to Make a Playlist!'}}
+        {{ loggedIn ? 'Make a playlist' : 'Login to Spotify'}}
       </button>
       <a class="playlist-link anchor-no-highlight btn btn-green-to-blue text-lg" v-if="playlistUrl !== null" target="_blank" :href="playlistUrl">
         {{ name }} Playlist
