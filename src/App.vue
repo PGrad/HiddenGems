@@ -255,7 +255,9 @@ async function makePlaylist() {
         <img v-else :src="avatarUrl" class="w-10 rounded-full" />
         {{ loggedIn ? 'Make a playlist' : 'Login to Make a Playlist!'}}
       </button>
-      <a class="playlist-link anchor-no-highlight btn btn-green-to-blue text-lg" v-if="playlistUrl !== null" target="_blank" :href="playlistUrl">Playlist</a>
+      <a class="playlist-link anchor-no-highlight btn btn-green-to-blue text-lg" v-if="playlistUrl !== null" target="_blank" :href="playlistUrl">
+        {{ name }} Playlist
+      </a>
       <ul class="songs-list">
         <li v-for="song in songs" :key="song" class="flex gap-2 mt-2 items-center bg-slate-100 dark:bg-slate-800 p-2 pl-3 rounded-md" >
           <img :src="song.img" class="w-10 inline-block h-fit" />
