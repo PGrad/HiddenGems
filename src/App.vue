@@ -240,11 +240,11 @@ async function makePlaylist() {
 <template>
   <main class="main">
     <div class="search flex flex-col items-center">
-      <img src="./assets/logo.gif" class="logo w-60" />
+      <img src="./assets/logo.gif" class="logo w-50" />
       <h1 class="text-5xl m-2">
         <span class="first">H</span>idden <span class="second">G</span>ems
       </h1>
-      <h3 class="m-2 text-lg" v-if="songs === null">Find hidden gems from your favorite artists!</h3>
+      <h3 class="m-2 text-lg" v-if="songs === null">Find rare songs from your favorite artists!</h3>
       <Search v-model:prompt-value="promptValue" />
     </div>
     <div v-if="songs !== null && songs.length > 0" class="songs-table items-center bg-gradient-to-r from-purple-700 to-slate-500 dark:from-slate-500 dark:via-slate-600 dark:to-purple-900" >
