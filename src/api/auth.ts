@@ -23,7 +23,7 @@ async function generateCodeChallenge(codeVerifier: string): Promise<string> {
   const digest = await window
     .crypto.subtle.digest('SHA-256', data);
 
-  localStorage.setItem('verifier', codeVerifier);
+  sessionStorage.setItem('verifier', codeVerifier);
 
   return base64encode(digest);
 }
@@ -53,7 +53,7 @@ export function getAuthCode(): string | null {
   const code = url.searchParams.get('code');
   const state = url.searchParams.get('state');
 
-  if (state !== localStorage.getItem('state')) {
+  if (state !== sessionStorage.getItem('state')) {
     throw new Error('State mismatch');
   }
 
@@ -77,7 +77,7 @@ export async function getAccessToken(token: AuthToken): Promise<[string, string]
         formData.append("grant_type", "authorization_code");
         formData.append("code", token.access_token);
         formData.append("redirect_uri", HOST);
-        formData.append("code_verifier", localStorage.getItem('verifier') || "");
+        formData.append("code_verifier", sessionStorage.getItem('verifier') || "");
         formData.append("client_id", CLIENT_ID);
     } else if (token.type === 'refresh_token') {
         formData.append("grant_type", "refresh_token");

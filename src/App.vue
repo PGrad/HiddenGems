@@ -22,12 +22,12 @@ async function setRefreshToken(code: string): Promise<string> {
     access_token: code,
     type: 'auth_code'
   });
-  localStorage.setItem('r_token', token[1]);
+  sessionStorage.setItem('r_token', token[1]);
   return token[1];
 }
 
 async function getAccessToken(): Promise<string> {
-  let r_token = localStorage.getItem('r_token');
+  let r_token = sessionStorage.getItem('r_token');
   const code = Auth.getAuthCode();
   if (code && !r_token)
     r_token = await setRefreshToken(code);
@@ -38,7 +38,7 @@ async function getAccessToken(): Promise<string> {
       access_token: r_token,
       type: 'refresh_token'
     });
-    localStorage.setItem('r_token', new_token[1]);
+    sessionStorage.setItem('r_token', new_token[1]);
   } else {
     new_token = await Auth.getAccessToken({
       access_token: '',
@@ -49,12 +49,12 @@ async function getAccessToken(): Promise<string> {
 }
 
 onMounted(async () => {
-  const query = localStorage.getItem('query');
+  const query = sessionStorage.getItem('query');
   if (query) {
     promptValue.value = query;
-    localStorage.removeItem('query');
+    sessionStorage.removeItem('query');
   }
-  const r_token = localStorage.getItem('r_token');
+  const r_token = sessionStorage.getItem('r_token');
   const auth_code = Auth.getAuthCode();
   if (auth_code) {
     loggedIn.value = true;
@@ -138,9 +138,9 @@ watch(promptValue, async (value) => {
 
 async function makePlaylist() {
   const auth_code = Auth.getAuthCode();
-  const r_token = localStorage.getItem('r_token');
+  const r_token = sessionStorage.getItem('r_token');
   if (!auth_code && !r_token) {
-    localStorage.setItem('query', promptValue.value);
+    sessionStorage.setItem('query', promptValue.value);
     window.location.href = await Auth.getAuthUrl();
   }
   else if (userId.value) {
