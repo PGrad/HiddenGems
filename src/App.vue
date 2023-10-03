@@ -4,17 +4,21 @@ import Search from './components/Search.vue'
 import Song from './components/Song.vue';
 import * as Api from "./api/api";
 import * as Auth from "./api/auth";
+import { SongData } from "./types";
 import "./App.css";
 
 const promptValue = ref('');
-const songs = ref<any[] | null>(null);
+const songs = ref<SongData[] | null>(null);
+const likedSongs = ref<any[] | null>(null);
+const recommendedSongs = ref<SongData[] | null>(null);
 const img = ref<string>('');
 const name = ref<string>('');
 const errorMsg = ref<string>('Too popular, normie...');
 const loggedIn = ref<boolean>(false);
 const playlistUrl = ref<string | null>(null);
 const avatarUrl = ref<string | null>(null);
-const userId = ref<string | null>(null);
+const userId = ref<string>('');
+const artistId = ref<string>('');
 
 async function setRefreshToken(code: string): Promise<string> {
   if (!code)
@@ -80,6 +84,9 @@ const debounce = (fn: any, delay: number) => {
 const debouncedSearch =
   debounce(async (value: any) => {
     playlistUrl.value = null;
+    songs.value = [];
+    recommendedSongs.value = [];
+
     if (promptValue.value === '') return; // do nothing.
     const arr: any = [];
     // Spotify's API can't exactly match artists,
@@ -89,18 +96,16 @@ const debouncedSearch =
     // the artist, and filter on their ID.
     const token = await getAccessToken();
     const topData = await Api.getSongs(value, 1, false, token);
-    const artistId = topData.tracks.items[0]?.artists[0]?.id;
-    if (artistId === undefined) {
-      songs.value = [];
+    artistId.value = topData.tracks.items[0]?.artists[0]?.id;
+    if (artistId.value === undefined) {
       errorMsg.value = 'I don\'t even know who that is, hipster...';
       return;
     }
     errorMsg.value = 'Too popular, normie...';
     const songData = await Api.getSongs(value, 50, true, token);
-    songs.value = [];
     const songSet = new Set();
     songData.tracks.items.forEach((item: any) => {
-      if (item.artists[0].id !== artistId) return;
+      if (item.artists[0].id !== artistId.value) return;
 
       // Some songs get added over and over
       // in greatest hits and stuff, ignore those.
@@ -115,7 +120,7 @@ const debouncedSearch =
       });
     });
     songs.value = arr;
-    const imgData = await Api.getArtist(artistId, token);
+    const imgData = await Api.getArtist(artistId.value, token);
     name.value = imgData.name;
     img.value = imgData.images[0].url;
   }, 1000);
@@ -149,9 +154,21 @@ async function makePlaylist() {
     const playlist = await Api.createPlaylist(
       name.value, userId.value, token);
     const uris = songs.value!.map((song: any) => song.uri);
-    await Api.addSongsToPlaylist(playlist.id, uris, token);
+    const recommended_uris = recommendedSongs.value!.map((song: any) => song.uri);
+    await Api.addSongsToPlaylist(playlist.id, [...uris, ...recommended_uris], token);
     playlistUrl.value = playlist.external_url;
   }
+}
+
+async function handleLike(songId: string) {
+  if (!likedSongs.value) {
+    likedSongs.value = [songId];
+  } else {
+    likedSongs.value = [songId, ...likedSongs.value!];
+  }
+
+  const token = await getAccessToken();
+  recommendedSongs.value = await Api.getRecommendations(artistId.value, likedSongs.value!, token);
 }
 </script>
 
@@ -251,12 +268,18 @@ async function makePlaylist() {
         {{ name }} Playlist
       </a>
       <ul class="songs-list">
-        <li v-for="song in songs" :key="song" class="flex gap-2 mt-2 items-center bg-slate-100 dark:bg-slate-800 p-2 pl-3 rounded-md" >
-          <Song :img="song.img" :url="song.url" :name="song.name" />
+        <li v-for="(song, idx) in songs" :key="idx" class="flex gap-2 mt-2 items-center bg-slate-100 dark:bg-slate-800 p-2 pl-3 rounded-md" >
+          <Song :img="song.img" :uri="song.uri" :url="song.url" :name="song.name" :on-like="handleLike" />
         </li>
       </ul>
     </div>
     <p class="errMsg" v-else-if="songs !== null && promptValue !== ''">{{ errorMsg }}</p>
+    <div v-if="recommendedSongs !== null && recommendedSongs.length > 0">
+      <h2>You might also like:</h2>
+      <li v-for="(song, idx) in recommendedSongs" :key="idx" class="flex gap-2 mt-2 items-center bg-slate-100 dark:bg-slate-800 p-2 pl-3 rounded-md" >
+          <Song :img="song.img" :uri="song.uri" :url="song.url" :name="song.name" />
+      </li>
+    </div>
   </main>
   <footer class="footer">Powered by Spotify Web API.<br/>Logo courtesy of wiki.hypixel.net.</footer>
 </template>
