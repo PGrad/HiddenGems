@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue';
 import Search from './components/Search.vue'
+import Song from './components/Song.vue';
 import * as Api from "./api/api";
 import * as Auth from "./api/auth";
 import "./App.css";
@@ -189,15 +190,6 @@ async function makePlaylist() {
     justify-content: space-evenly;
   }
 
-  .song-link {
-    border-bottom: solid white 1px;
-    font-size: 22px;
-  }
-
-  .song-list li {
-    width: 10em;
-  }
-
   .artist-img {
     width: 200px;
     height: 200px;
@@ -260,8 +252,7 @@ async function makePlaylist() {
       </a>
       <ul class="songs-list">
         <li v-for="song in songs" :key="song" class="flex gap-2 mt-2 items-center bg-slate-100 dark:bg-slate-800 p-2 pl-3 rounded-md" >
-          <img :src="song.img" class="w-10 inline-block h-fit" />
-          <a class="song-link anchor-no-highlight text-green-400 hover:text-white" target="_blank" :href="song.url" >{{ song.name }}</a>
+          <Song :img="song.img" :url="song.url" :name="song.name" />
         </li>
       </ul>
     </div>
