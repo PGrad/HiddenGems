@@ -12,7 +12,10 @@ async function callAPI(url: string, token: string, props?: object) {
 
 export async function getSongs(artist: string, limit: number, hipster: boolean, token: string) {
     const escaped = encodeURIComponent(artist);
-    return await callAPI(`search?q=artist:${escaped}%20${hipster ? "tag:hipster" : ""}&type=track&limit=${limit}`, token);
+    const songs = await callAPI(`search?q=artist:${escaped}%20${hipster ? "tag:hipster" : ""}&type=track&limit=${limit}`, token);
+    const items = songs.tracks.items.filter((song: any) => song.album.album_type !== "compilation");
+    console.log(items);
+    return items;
 }
 
 export async function getArtist(id: string, token: string) {

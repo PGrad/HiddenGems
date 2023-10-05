@@ -95,16 +95,16 @@ const debouncedSearch =
     // The solution is to find the top track, which is probably
     // the artist, and filter on their ID.
     const token = await getAccessToken();
-    const topData = await Api.getSongs(value, 1, false, token);
-    artistId.value = topData.tracks.items[0]?.artists[0]?.id;
+    const topTracks = await Api.getSongs(value, 1, false, token);
+    artistId.value = topTracks[0]?.artists[0]?.id;
     if (artistId.value === undefined) {
       errorMsg.value = 'I don\'t even know who that is, hipster...';
       return;
     }
     errorMsg.value = 'Too popular, normie...';
-    const songData = await Api.getSongs(value, 50, true, token);
+    const tracks = await Api.getSongs(value, 50, true, token);
     const songSet = new Set();
-    songData.tracks.items.forEach((item: any) => {
+    tracks.forEach((item: any) => {
       if (item.artists[0].id !== artistId.value) return;
 
       // Some songs get added over and over
