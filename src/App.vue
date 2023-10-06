@@ -13,7 +13,7 @@ const likedSongs = ref<any[] | null>(null);
 const recommendedSongs = ref<SongData[] | null>(null);
 const img = ref<string>('');
 const name = ref<string>('');
-const errorMsg = ref<string>('Too popular, normie...');
+const errorMsg = ref<string>('Loading...');
 const loggedIn = ref<boolean>(false);
 const playlistUrl = ref<string | null>(null);
 const avatarUrl = ref<string | null>(null);
@@ -86,6 +86,7 @@ const debouncedSearch =
     playlistUrl.value = null;
     songs.value = [];
     recommendedSongs.value = [];
+    errorMsg.value = 'Loading...';
 
     if (promptValue.value === '') return; // do nothing.
     const arr: any = [];
@@ -101,7 +102,6 @@ const debouncedSearch =
       errorMsg.value = 'I don\'t even know who that is, hipster...';
       return;
     }
-    errorMsg.value = 'Too popular, normie...';
     const tracks = await Api.getSongs(value, 50, true, token);
     const songSet = new Set();
     tracks.forEach((item: any) => {
@@ -123,6 +123,7 @@ const debouncedSearch =
     const imgData = await Api.getArtist(artistId.value, token);
     name.value = imgData.name;
     img.value = imgData.images[0].url;
+    errorMsg.value = 'Too popular, normie...';
   }, 1000);
 
 /* window.onSpotifyIframeApiReady = (IFrameAPI) => {
