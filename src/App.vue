@@ -82,7 +82,7 @@ const debounce = (fn: any, delay: number) => {
 };
 
 const debouncedSearch =
-  debounce(async (value: any) => {
+  debounce(async (value: string) => {
     playlistUrl.value = null;
     songs.value = [];
     recommendedSongs.value = [];
@@ -255,7 +255,7 @@ async function handleLike(songId: string) {
         <span class="first">H</span>idden <span class="second">G</span>ems
       </h1>
       <h3 class="m-2 text-lg" v-if="songs === null">Find rare songs from your favorite artists!</h3>
-      <Search v-model:prompt-value="promptValue" />
+      <Search v-model:prompt-value="promptValue" :search-handler="debouncedSearch" />
     </div>
     <div v-if="songs !== null && songs.length > 0" class="songs-table items-center bg-gradient-to-r from-purple-700 to-slate-500 dark:from-slate-500 dark:via-slate-600 dark:to-purple-900" >
       <h3 class="artist-q">How well do you know <span class="artist-name">{{ name }}</span>?</h3>
