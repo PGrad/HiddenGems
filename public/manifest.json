@@ -11,7 +11,7 @@
   "theme_color": "#000000",
   "icons": [
     {
-      "src": "/app_icon_2.png",
+      "src": "/HiddenGems/app_icon_2.png",
       "sizes": "512x512"
     }
   ],
