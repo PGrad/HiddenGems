@@ -42,10 +42,25 @@
     />
 
     <!-- Meta Tags Generated via https://www.opengraph.xyz -->
+
+    <!--
+      manifest.json provides metadata used when your web app is installed on a
+      user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
+    -->
+    <link rel="manifest" href="/manifest.json">
   </head>
   <body>
     <div id="app"></div>
     <script type="module" src="/src/main.ts"></script>
     <script src="https://open.spotify.com/embed-podcast/iframe-api/v1" async></script>
+
+    <script>
+      // Add the PWA service worker here.
+      if (!navigator.serviceWorker.controller) {
+        navigator.serviceWorker.register("/sw.js").then(function(reg) {
+          console.log("Service worker has been registered for scope: " + reg.scope);
+        });
+      }
+    </script>
   </body>
 </html>

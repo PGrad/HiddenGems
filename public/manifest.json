@@ -1,0 +1,20 @@
+{
+  "background_color": "#ffffff",
+  "description": "Find new music from your favorite artists!",
+  "dir": "ltr",
+  "display": "standalone",
+  "name": "Hidden Gems",
+  "orientation": "any",
+  "scope": "/",
+  "short_name": "Gem",
+  "start_url": "/",
+  "theme_color": "#000000",
+  "icons": [
+    {
+      "src": "/assets/logo.gif",
+      "sizes": "512x512"
+    }
+  ],
+  "id": "hidden_gems_music",
+  "lang": "en"
+}
