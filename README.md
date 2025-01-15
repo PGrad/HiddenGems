@@ -1,1 +1,1 @@
-Find your favorite artists new again by finding hidden gems.
+Make your favorite artists new again by finding hidden gems.
