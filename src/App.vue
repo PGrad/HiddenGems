@@ -183,6 +183,11 @@ async function handleLike(songId: string) {
   const token = await getAccessToken();
   recommendedSongs.value = await Api.getRecommendations(artistId.value, likedSongs.value!, token);
 }
+
+function goToUrl(url: string) {
+  console.log('going to url', url);
+  window.open(url, "_blank");
+}
 </script>
 
 <style scoped>
@@ -271,7 +276,7 @@ async function handleLike(songId: string) {
         {{ name }} Playlist
       </a>
       <ul class="songs-list">
-        <li v-for="(song, idx) in getHighlights(songs)" :key="idx" class="flex flex-col gap-4 mt-2 items-center bg-slate-100 dark:bg-slate-800 p-2 pl-3 rounded-md w-80 drop-shadow-[0.2rem_0.5rem_0.5rem_rgba(0,0,0,0.8)]" >
+        <li v-for="(song, idx) in getHighlights(songs)" @click="goToUrl(song.url)" :key="idx" class="flex flex-col gap-4 mt-2 items-center bg-slate-100 dark:bg-slate-800 pb-3 rounded-md w-80 drop-shadow-[0.2rem_0.5rem_0.5rem_rgba(0,0,0,0.8)] cursor-pointer hover:bg-slate-700" >
           <Song :img="song.img" :uri="song.uri" :url="song.url" :name="song.name" :on-like="handleLike" />
         </li>
       </ul>

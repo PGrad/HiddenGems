@@ -35,6 +35,6 @@ const handleClick = () => {
 </style>
 
 <template>
-    <img :src="img" class="w-15 inline-block h-fit" />
+    <img :src="img" class="w-15 inline-block h-fit rounded-t-md" />
     <a class="song-link no-underline text-green-400 hover:text-white" target="_blank" :href="url" >{{ name }}</a>
 </template>
