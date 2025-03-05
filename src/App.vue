@@ -183,7 +183,6 @@ async function handleLike(songId: string) {
   .songs-table {
     display: flex;
     flex-direction: column;
-    width: 80vw;
     text-align: left;
     padding: 2em;
     gap: 1em;
