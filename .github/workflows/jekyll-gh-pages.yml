@@ -53,7 +53,7 @@ jobs:
           yarn build
           mv dist _site
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v1
+        uses: actions/upload-pages-artifact@v3.0.1
 
   # Deployment job
   deploy:
