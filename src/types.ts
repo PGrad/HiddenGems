@@ -3,4 +3,5 @@ export interface SongData {
     url: string;
     uri: string;
     img: string;
+    albumId: string;
 }

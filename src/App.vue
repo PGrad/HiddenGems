@@ -117,6 +117,7 @@ const debouncedSearch =
         url: item.external_urls.spotify,
         uri: item.uri,
         img: item.album.images[0].url,
+        albumId: item.album.id,
       });
     });
     songs.value = arr;
@@ -159,6 +160,17 @@ async function makePlaylist() {
     await Api.addSongsToPlaylist(playlist.id, [...uris, ...recommended_uris], token);
     playlistUrl.value = playlist.external_url;
   }
+}
+
+function getHighlights(songs: SongData[]) {
+  const albumSet = new Set();
+  const checkAlbum = (id: string) => {
+    if (albumSet.has(id)) return false;
+    albumSet.add(id);
+    return true;
+  };
+  const highlights = songs.filter((song) => checkAlbum(song.albumId));
+  return highlights;
 }
 
 async function handleLike(songId: string) {
@@ -259,7 +271,7 @@ async function handleLike(songId: string) {
         {{ name }} Playlist
       </a>
       <ul class="songs-list">
-        <li v-for="(song, idx) in songs" :key="idx" class="flex flex-col gap-4 mt-2 items-center bg-slate-100 dark:bg-slate-800 p-2 pl-3 rounded-md w-80 drop-shadow-[0.2rem_0.5rem_0.5rem_rgba(0,0,0,0.8)]" >
+        <li v-for="(song, idx) in getHighlights(songs)" :key="idx" class="flex flex-col gap-4 mt-2 items-center bg-slate-100 dark:bg-slate-800 p-2 pl-3 rounded-md w-80 drop-shadow-[0.2rem_0.5rem_0.5rem_rgba(0,0,0,0.8)]" >
           <Song :img="song.img" :uri="song.uri" :url="song.url" :name="song.name" :on-like="handleLike" />
         </li>
       </ul>
