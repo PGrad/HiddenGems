@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-const props = defineProps<{
+defineProps<{
     img: string,
     url: string,
     uri: string,
@@ -8,14 +7,6 @@ const props = defineProps<{
     onLike?: (s: string) => Promise<void>
 }>();
 
-const clicked = ref<boolean>(false)
-
-const handleClick = () => {
-    clicked.value = true
-    if (props.onLike) {
-        props.onLike(props.uri)
-    }
-}
 </script>
 
 <style scoped>
