@@ -192,8 +192,8 @@ async function handleLike(songId: string) {
     display: grid;
     width: 100%;
     place-items: center;
-    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
-    list-style-type: decimal;
+    grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
+    list-style-type: none;
     flex-wrap: wrap;
     gap: 2rem;
   }
@@ -259,7 +259,7 @@ async function handleLike(songId: string) {
         {{ name }} Playlist
       </a>
       <ul class="songs-list">
-        <li v-for="(song, idx) in songs" :key="idx" class="flex gap-2 mt-2 items-center bg-slate-100 dark:bg-slate-800 p-2 pl-3 rounded-md w-60 drop-shadow-[0.2rem_0.5rem_0.5rem_rgba(0,0,0,0.8)]" >
+        <li v-for="(song, idx) in songs" :key="idx" class="flex flex-col gap-4 mt-2 items-center bg-slate-100 dark:bg-slate-800 p-2 pl-3 rounded-md w-80 drop-shadow-[0.2rem_0.5rem_0.5rem_rgba(0,0,0,0.8)]" >
           <Song :img="song.img" :uri="song.uri" :url="song.url" :name="song.name" :on-like="handleLike" />
         </li>
       </ul>
