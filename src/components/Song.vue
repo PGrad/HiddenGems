@@ -27,6 +27,10 @@ const handleClick = () => {
   .song-link {
     border-bottom: solid white 1px;
     font-size: 22px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 15rem;
   }
 </style>
 

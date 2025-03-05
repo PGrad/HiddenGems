@@ -180,32 +180,23 @@ async function handleLike(songId: string) {
     gap: 2em
   }
 
-  @media (min-width: 1024px) {
-    .songs-list {
-      column-count: 2;
-      column-width: 10em;
-    }
-  }
-
-  @media (min-width: 1400px) {
-    .songs-list {
-      column-count: 3;
-    }
-  }
-
   .songs-table {
     display: flex;
     flex-direction: column;
+    width: 80vw;
     text-align: left;
     padding: 2em;
     gap: 1em;
   }
 
   .songs-list {
-    display: flex;
+    display: grid;
+    width: 100%;
+    place-items: center;
+    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
     list-style-type: decimal;
     flex-wrap: wrap;
-    justify-content: space-evenly;
+    gap: 2rem;
   }
 
   .artist-img {
@@ -269,7 +260,7 @@ async function handleLike(songId: string) {
         {{ name }} Playlist
       </a>
       <ul class="songs-list">
-        <li v-for="(song, idx) in songs" :key="idx" class="flex gap-2 mt-2 items-center bg-slate-100 dark:bg-slate-800 p-2 pl-3 rounded-md" >
+        <li v-for="(song, idx) in songs" :key="idx" class="flex gap-2 mt-2 items-center bg-slate-100 dark:bg-slate-800 p-2 pl-3 rounded-md w-60 drop-shadow-[0.2rem_0.5rem_0.5rem_rgba(0,0,0,0.8)]" >
           <Song :img="song.img" :uri="song.uri" :url="song.url" :name="song.name" :on-like="handleLike" />
         </li>
       </ul>
