@@ -54,6 +54,8 @@ jobs:
           mv dist _site
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3.0.1
+        with:
+          path: _site
 
   # Deployment job
   deploy:
