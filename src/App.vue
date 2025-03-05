@@ -264,7 +264,7 @@ function goToUrl(url: string) {
       <h3 class="m-2 text-lg" v-if="songs === null">Find rare songs from your favorite artists!</h3>
       <Search v-model:prompt-value="promptValue" :search-handler="debouncedSearch" />
     </div>
-    <div v-if="songs !== null && songs.length > 0" class="songs-table items-center bg-gradient-to-r from-purple-700 to-slate-500 dark:from-slate-500 dark:via-slate-600 dark:to-purple-900" >
+    <div v-if="songs !== null && songs.length > 0" class="songs-table items-center bg-linear-to-r from-purple-700 to-slate-500 dark:from-slate-500 dark:via-slate-600 dark:to-purple-900" >
       <h3 class="artist-q">How well do you know <span class="artist-name">{{ name }}</span>?</h3>
       <img :src="img" class="artist-img" />
       <button @click="makePlaylist" v-if="playlistUrl === null" class="btn btn-green-shadow text-lg flex items-center justify-between gap-2">
