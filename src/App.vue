@@ -74,7 +74,7 @@ onMounted(async () => {
 });
 
 const debounce = (fn: any, delay: number) => {
-  let timeoutId: number;
+  let timeoutId: ReturnType<typeof setTimeout>;
   return (...args: any[]) => {
     clearTimeout(timeoutId);
     timeoutId = setTimeout(() => fn(...args), delay);
