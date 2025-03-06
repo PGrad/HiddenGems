@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc && vite build && npx tailwindcss -i ./src/style.css -o ./dist/output.css",
+    "build": "vue-tsc && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -22,8 +22,5 @@
     "typescript": "^5.8.2",
     "vite": "^6.2.0",
     "vue-tsc": "^2.2.8"
-  },
-  "engines": {
-    "node": ">=20.0.0"
   }
 }
