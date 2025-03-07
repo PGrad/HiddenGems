@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref, watch } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import Search from './components/Search.vue'
 import Song from './components/Song.vue';
 import * as Api from "./api/api";
@@ -16,7 +16,7 @@ const name = ref<string>('');
 const errorMsg = ref<string>('Loading...');
 const loggedIn = ref<boolean>(false);
 const playlistUrl = ref<string | null>(null);
-const avatarUrl = ref<string | null>(null);
+const avatarUrl = ref<string>('');
 const userId = ref<string>('');
 const artistId = ref<string>('');
 const topArtists = ref<string[]>([]);
@@ -290,7 +290,7 @@ function goToUrl(url: string) {
       <h3 v-if="currentArtist !== '' && songs === null" class="inline-flex justify-between gap-1 m-2 text-lg w-100 whitespace-nowrap overflow-hidden text-ellipsis animate-bounce">
         Find rare songs from <span class="artist-name" >{{ currentArtist }}</span>
       </h3>
-      <Search v-if="loggedIn && avatarUrl !== null" v-model:prompt-value="promptValue" :search-handler="debouncedSearch" />
+      <Search v-if="loggedIn && avatarUrl !== ''" v-model:prompt-value="promptValue" :search-handler="debouncedSearch" />
       <button v-else @click="makePlaylist" class="btn btn-green-shadow text-lg flex items-center justify-between gap-2 mt-2">
         <img src="./assets/spotify_icon.svg" class="w-10" />
         Login to Spotify
@@ -299,7 +299,7 @@ function goToUrl(url: string) {
     <section v-if="songs !== null && songs.length > 0" class="songs-table items-center bg-linear-to-r from-purple-700 to-slate-500 dark:from-slate-500 dark:via-slate-600 dark:to-purple-900" >
       <h3 class="artist-q">How well do you know <span class="artist-name">{{ name }}</span>?</h3>
       <img :src="img" class="artist-img" />
-      <button @click="makePlaylist" v-if="loggedIn && avatarUrl === null && playlistUrl === null" class="btn btn-green-shadow text-lg flex items-center justify-between gap-2">
+      <button @click="makePlaylist" v-if="loggedIn && avatarUrl === '' && playlistUrl === null" class="btn btn-green-shadow text-lg flex items-center justify-between gap-2">
         <img :src="avatarUrl" class="w-10 rounded-full" />
         Make a playlist
       </button>
