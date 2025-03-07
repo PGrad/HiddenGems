@@ -25,6 +25,6 @@ defineProps<{
 </style>
 
 <template>
-    <img :src="img" class="w-fit inline-block h-fit rounded-t-md" />
+    <img :src="img" class="w-fit inline-block h-fit rounded-t-md aspect-square" />
     <a class="@max-sm:max-w-40 max-w-60 song-link no-underline text-green-400 hover:text-white" target="_blank" :href="url" >{{ name }}</a>
 </template>
