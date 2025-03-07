@@ -7,7 +7,12 @@ async function callAPI(url: string, token: string, props?: object) {
             },
             ...props,
         });
-    return await data.json();
+
+    try {
+        return await data.json();
+    } catch (e) {
+        return {};
+    }
 }
 
 export async function getSongs(artist: string, limit: number, hipster: boolean, token: string) {
@@ -21,6 +26,16 @@ export async function getSongs(artist: string, limit: number, hipster: boolean, 
         if (songs.length === 0) break;
     }
     return filteredSongs;
+}
+
+export async function getUserTopArtists(token: string) {
+    const json = await callAPI("me/top/artists", token);
+    return json?.["items"].map((artist: any) => artist?.["name"] ?? '') ?? [];
+}
+
+export async function getCurrentArtist(token: string) {
+    const json = await callAPI("me/player/currently-playing", token);
+    return json?.["item"]?.["artists"]?.[0]?.["name"] ?? null;
 }
 
 export async function getArtist(id: string, token: string) {

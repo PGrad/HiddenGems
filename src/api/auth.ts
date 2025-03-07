@@ -36,7 +36,7 @@ export async function getAuthUrl(): Promise<string> {
   const params = new URLSearchParams({
     response_type: 'code',
     client_id: import.meta.env.VITE_SPOTIFY_CLIENT_ID,
-    scope: 'playlist-modify-private',
+    scope: 'playlist-modify-private user-read-currently-playing user-top-read',
     redirect_uri: HOST,
     code_challenge_method: 'S256',
     code_challenge: codeChallenge,

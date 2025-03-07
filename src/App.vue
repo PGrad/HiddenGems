@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue';
+import { onMounted, reactive, ref, watch } from 'vue';
 import Search from './components/Search.vue'
 import Song from './components/Song.vue';
 import * as Api from "./api/api";
@@ -19,6 +19,9 @@ const playlistUrl = ref<string | null>(null);
 const avatarUrl = ref<string | null>(null);
 const userId = ref<string>('');
 const artistId = ref<string>('');
+const topArtists = ref<string[]>([]);
+const idx = ref<number>(0);
+const currentArtist = ref<string>('');
 
 async function setRefreshToken(code: string): Promise<string> {
   if (!code)
@@ -70,6 +73,15 @@ onMounted(async () => {
     const [id, img] = await Api.getUser(await getAccessToken());
     userId.value = id;
     avatarUrl.value = img;
+    try {
+      const currentArtist = await Api.getCurrentArtist(await getAccessToken());
+      if (currentArtist) {
+        topArtists.value.push(currentArtist);
+      }
+      topArtists.value.push(...(await Api.getUserTopArtists(await getAccessToken())));
+    } catch (e) {
+      console.error('Error getting current artist', e);
+    }
   }
 });
 
@@ -87,6 +99,7 @@ const debouncedSearch =
     songs.value = [];
     recommendedSongs.value = [];
     errorMsg.value = 'Loading...';
+    const noResults = 'Try another artist from your favorites:';
 
     if (promptValue.value === '') return; // do nothing.
     const arr: any = [];
@@ -99,7 +112,7 @@ const debouncedSearch =
     const topTracks = await Api.getSongs(value, 1, false, token);
     artistId.value = topTracks[0]?.artists[0]?.id;
     if (artistId.value === undefined) {
-      errorMsg.value = 'I don\'t even know who that is, hipster...';
+      errorMsg.value = noResults;
       return;
     }
     const tracks = await Api.getSongs(value, 50, true, token);
@@ -124,7 +137,7 @@ const debouncedSearch =
     const imgData = await Api.getArtist(artistId.value, token);
     name.value = imgData.name;
     img.value = imgData.images[0].url;
-    errorMsg.value = 'Too popular, normie...';
+    errorMsg.value = noResults;
   }, 1000);
 
 /* window.onSpotifyIframeApiReady = (IFrameAPI) => {
@@ -143,6 +156,21 @@ watch(promptValue, async (value) => {
   }
   debouncedSearch(value);
 });
+
+watch([idx, userId, topArtists], (new_values, _) => {
+    let timeoutId: ReturnType<typeof setTimeout>;
+    console.log(new_values);
+    timeoutId = setTimeout(() => {
+      clearTimeout(timeoutId);
+      if (new_values[2].length > 0) {
+        const num = (new_values[0] + 1) % new_values[2].length;
+        idx.value = num;
+        currentArtist.value = new_values[2][num];
+      }
+    }, 1000);
+  },
+  { immediate: true, deep: true }
+);
 
 async function makePlaylist() {
   const auth_code = Auth.getAuthCode();
@@ -211,7 +239,6 @@ function goToUrl(url: string) {
     place-items: center;
     list-style-type: none;
     flex-wrap: wrap;
-    gap: 2rem;
   }
 
   .artist-img {
@@ -255,32 +282,42 @@ function goToUrl(url: string) {
 
 <template>
   <main class="main">
-    <div class="search flex flex-col items-center">
+    <section class="search flex flex-col items-center">
       <img src="./assets/logo.gif" class="logo w-50" />
       <h1 class="text-5xl m-2">
         <span class="first">H</span>idden <span class="second">G</span>ems
       </h1>
-      <h3 class="m-2 text-lg" v-if="songs === null">Find rare songs from your favorite artists!</h3>
-      <Search v-model:prompt-value="promptValue" :search-handler="debouncedSearch" />
-    </div>
-    <div v-if="songs !== null && songs.length > 0" class="songs-table items-center bg-linear-to-r from-purple-700 to-slate-500 dark:from-slate-500 dark:via-slate-600 dark:to-purple-900" >
+      <h3 v-if="currentArtist !== '' && songs === null" class="inline-flex justify-between gap-1 m-2 text-lg w-100 whitespace-nowrap overflow-hidden text-ellipsis">Find rare songs from <span class="artist-name" >{{ currentArtist }}</span></h3>
+      <Search v-if="loggedIn && avatarUrl !== null" v-model:prompt-value="promptValue" :search-handler="debouncedSearch" />
+      <button v-else @click="makePlaylist" class="btn btn-green-shadow text-lg flex items-center justify-between gap-2 mt-2">
+        <img src="./assets/spotify_icon.svg" class="w-10" />
+        Login to Spotify
+      </button>
+    </section>
+    <section v-if="songs !== null && songs.length > 0" class="songs-table items-center bg-linear-to-r from-purple-700 to-slate-500 dark:from-slate-500 dark:via-slate-600 dark:to-purple-900" >
       <h3 class="artist-q">How well do you know <span class="artist-name">{{ name }}</span>?</h3>
       <img :src="img" class="artist-img" />
-      <button @click="makePlaylist" v-if="playlistUrl === null" class="btn btn-green-shadow text-lg flex items-center justify-between gap-2">
-        <img v-if="!loggedIn || avatarUrl === null" src="./assets/spotify_icon.svg" class="w-10" />
-        <img v-else :src="avatarUrl" class="w-10 rounded-full" />
-        {{ loggedIn ? 'Make a playlist' : 'Login to Spotify'}}
+      <button @click="makePlaylist" v-if="loggedIn && avatarUrl === null && playlistUrl === null" class="btn btn-green-shadow text-lg flex items-center justify-between gap-2">
+        <img :src="avatarUrl" class="w-10 rounded-full" />
+        Make a playlist
       </button>
       <a class="playlist-link anchor-no-highlight btn btn-green-to-blue text-lg" v-if="playlistUrl !== null" target="_blank" :href="playlistUrl">
         {{ name }} Playlist
       </a>
-      <ul class="grid songs-list @container grid-cols-[repeat(auto-fill,minmax(15rem,1fr)) md:grid-cols-[repeat(auto-fill,minmax(20rem,1fr))]"> 
+      <ul class="grid songs-list gap-2 @container grid-cols-[repeat(auto-fill,minmax(15rem,1fr)) md:grid-cols-[repeat(auto-fill,minmax(20rem,1fr))]"> 
         <li v-for="(song, idx) in getHighlights(songs)" @click="goToUrl(song.url)" :key="idx" class="flex flex-col gap-4 mt-2 items-center bg-slate-100 dark:bg-slate-800 pb-3 rounded-md w-50 @xs:max-md:w-60 @md:w-80 drop-shadow-[0.2rem_0.5rem_0.5rem_rgba(0,0,0,0.8)] cursor-pointer hover:bg-slate-700" >
           <Song :img="song.img" :uri="song.uri" :url="song.url" :name="song.name" :on-like="handleLike" />
         </li>
       </ul>
-    </div>
-    <p class="errMsg" v-else-if="songs !== null && promptValue !== ''">{{ errorMsg }}</p>
+    </section>
+    <section v-else-if="songs !== null && promptValue !== ''">
+      <p class="errMsg" >{{ errorMsg }}</p>
+      <ul v-if="errorMsg !== 'Loading...'" class="mt-2 gap-1 gap-y-3 grid songs-list @container grid-cols-[repeat(auto-fill,minmax(5rem,1fr)) md:grid-cols-[repeat(auto-fill,minmax(10rem,1fr))]">
+        <li v-for="artist in topArtists" class="button bg-slate-100 dark:bg-slate-800 p-2 pl-3 rounded-md w-fit drop-shadow-[0.2rem_0.5rem_0.5rem_rgba(0,0,0,0.8)] cursor-pointer hover:bg-slate-200" @click="promptValue = artist">
+          {{ artist }}
+        </li>
+      </ul>
+    </section>
     <div v-if="recommendedSongs !== null && recommendedSongs.length > 0">
       <h2>You might also like:</h2>
       <li v-for="(song, idx) in recommendedSongs" :key="idx" class="flex gap-2 mt-2 items-center bg-slate-100 dark:bg-slate-800 p-2 pl-3 rounded-md" >
