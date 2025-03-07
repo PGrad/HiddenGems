@@ -287,7 +287,9 @@ function goToUrl(url: string) {
       <h1 class="text-5xl m-2">
         <span class="first">H</span>idden <span class="second">G</span>ems
       </h1>
-      <h3 v-if="currentArtist !== '' && songs === null" class="inline-flex justify-between gap-1 m-2 text-lg w-100 whitespace-nowrap overflow-hidden text-ellipsis">Find rare songs from <span class="artist-name" >{{ currentArtist }}</span></h3>
+      <h3 v-if="currentArtist !== '' && songs === null" class="inline-flex justify-between gap-1 m-2 text-lg w-100 whitespace-nowrap overflow-hidden text-ellipsis animate-bounce">
+        Find rare songs from <span class="artist-name" >{{ currentArtist }}</span>
+      </h3>
       <Search v-if="loggedIn && avatarUrl !== null" v-model:prompt-value="promptValue" :search-handler="debouncedSearch" />
       <button v-else @click="makePlaylist" class="btn btn-green-shadow text-lg flex items-center justify-between gap-2 mt-2">
         <img src="./assets/spotify_icon.svg" class="w-10" />
