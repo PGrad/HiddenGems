@@ -76,18 +76,3 @@ export async function addSongsToPlaylist(playlist_id: string, songs: string[], t
             })
         });
 }
-
-export async function getRecommendations(artist: string, songs: string[], token: string) {
-    const songUris = songs.map(song => song.split(":")[2]);
-    console.log(artist, songs);
-    const json = await callAPI(`recommendations?seed_artists=${artist}&seed_tracks=${songUris.join(",")}`, token);
-    console.log(json["tracks"]);
-    return json["tracks"].map((song: any) => (
-        {
-            "name": song.name,
-            "url": song.external_urls.spotify,
-            "uri": song.uri,
-            "img": song.album.images[0].url
-        }
-    ));
-}

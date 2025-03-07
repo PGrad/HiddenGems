@@ -9,8 +9,6 @@ import "./App.css";
 
 const promptValue = ref('');
 const songs = ref<SongData[] | null>(null);
-const likedSongs = ref<any[] | null>(null);
-const recommendedSongs = ref<SongData[] | null>(null);
 const img = ref<string>('');
 const name = ref<string>('');
 const errorMsg = ref<string>('Loading...');
@@ -97,7 +95,6 @@ const debouncedSearch =
   debounce(async (value: string) => {
     playlistUrl.value = null;
     songs.value = [];
-    recommendedSongs.value = [];
     errorMsg.value = 'Loading...';
     const noResults = 'Try another artist from your favorites:';
 
@@ -184,8 +181,7 @@ async function makePlaylist() {
     const playlist = await Api.createPlaylist(
       name.value, userId.value, token);
     const uris = songs.value!.map((song: any) => song.uri);
-    const recommended_uris = recommendedSongs.value!.map((song: any) => song.uri);
-    await Api.addSongsToPlaylist(playlist.id, [...uris, ...recommended_uris], token);
+    await Api.addSongsToPlaylist(playlist.id, [...uris], token);
     playlistUrl.value = playlist.external_url;
   }
 }
@@ -199,17 +195,6 @@ function getHighlights(songs: SongData[]) {
   };
   const highlights = songs.filter((song) => checkAlbum(song.albumId));
   return highlights;
-}
-
-async function handleLike(songId: string) {
-  if (!likedSongs.value) {
-    likedSongs.value = [songId];
-  } else {
-    likedSongs.value = [songId, ...likedSongs.value!];
-  }
-
-  const token = await getAccessToken();
-  recommendedSongs.value = await Api.getRecommendations(artistId.value, likedSongs.value!, token);
 }
 
 function goToUrl(url: string) {
@@ -308,7 +293,7 @@ function goToUrl(url: string) {
       </a>
       <ul class="grid songs-list gap-2 @container grid-cols-[repeat(auto-fill,minmax(15rem,1fr)) md:grid-cols-[repeat(auto-fill,minmax(20rem,1fr))]"> 
         <li v-for="(song, idx) in getHighlights(songs)" @click="goToUrl(song.url)" :key="idx" class="flex flex-col gap-4 mt-2 items-center bg-slate-100 dark:bg-slate-800 pb-3 rounded-md w-50 @xs:max-md:w-60 @md:w-80 drop-shadow-[0.2rem_0.5rem_0.5rem_rgba(0,0,0,0.8)] cursor-pointer hover:bg-slate-700" >
-          <Song :img="song.img" :uri="song.uri" :url="song.url" :name="song.name" :on-like="handleLike" />
+          <Song :img="song.img" :uri="song.uri" :url="song.url" :name="song.name" />
         </li>
       </ul>
     </section>
@@ -320,12 +305,6 @@ function goToUrl(url: string) {
         </li>
       </ul>
     </section>
-    <div v-if="recommendedSongs !== null && recommendedSongs.length > 0">
-      <h2>You might also like:</h2>
-      <li v-for="(song, idx) in recommendedSongs" :key="idx" class="flex gap-2 mt-2 items-center bg-slate-100 dark:bg-slate-800 p-2 pl-3 rounded-md" >
-          <Song :img="song.img" :uri="song.uri" :url="song.url" :name="song.name" />
-      </li>
-    </div>
   </main>
   <footer class="footer">Powered by Spotify Web API.<br/>Logo courtesy of wiki.hypixel.net.</footer>
 </template>
