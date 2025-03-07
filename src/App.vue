@@ -156,7 +156,6 @@ watch(promptValue, async (value) => {
 
 watch([idx, userId, topArtists], (new_values, _) => {
     let timeoutId: ReturnType<typeof setTimeout>;
-    console.log(new_values);
     timeoutId = setTimeout(() => {
       clearTimeout(timeoutId);
       if (new_values[2].length > 0) {
@@ -284,7 +283,7 @@ function goToUrl(url: string) {
     <section v-if="songs !== null && songs.length > 0" class="songs-table items-center bg-linear-to-r from-purple-700 to-slate-500 dark:from-slate-500 dark:via-slate-600 dark:to-purple-900" >
       <h3 class="artist-q">How well do you know <span class="artist-name">{{ name }}</span>?</h3>
       <img :src="img" class="artist-img" />
-      <button @click="makePlaylist" v-if="loggedIn && avatarUrl === '' && playlistUrl === null" class="btn btn-green-shadow text-lg flex items-center justify-between gap-2">
+      <button @click="makePlaylist" v-if="loggedIn && avatarUrl !== '' && playlistUrl === null" class="btn btn-green-shadow text-lg flex items-center justify-between gap-2">
         <img :src="avatarUrl" class="w-10 rounded-full" />
         Make a playlist
       </button>
