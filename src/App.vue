@@ -287,11 +287,11 @@ function goToUrl(url: string) {
       <h1 class="text-5xl m-2">
         <span class="first">H</span>idden <span class="second">G</span>ems
       </h1>
-      <Search v-if="loggedIn" v-model:prompt-value="promptValue" :search-handler="debouncedSearch" />
+      <Search v-if="loggedIn && avatarUrl !== ''" v-model:prompt-value="promptValue" :search-handler="debouncedSearch" />
       <h3 v-if="currentArtist !== '' && songs === null" class="mt-6 inline-flex flex-col justify-between gap-1 m-2 text-lg">
         Find rare songs from <span class="animate-bounce artist-name w-60 md:w-100 whitespace-nowrap overflow-hidden text-ellipsis" >{{ currentArtist }}</span>
       </h3>
-      <button v-else @click="makePlaylist" class="btn btn-green-shadow text-lg flex items-center justify-between gap-2 mt-2">
+      <button v-if="!loggedIn || avatarUrl === ''" @click="makePlaylist" class="btn btn-green-shadow text-lg flex items-center justify-between gap-2 mt-2">
         <img src="./assets/spotify_icon.svg" class="w-10" />
         Login to Spotify
       </button>
@@ -299,7 +299,7 @@ function goToUrl(url: string) {
     <section v-if="songs !== null && songs.length > 0" class="songs-table items-center bg-linear-to-r from-purple-700 to-slate-500 dark:from-slate-500 dark:via-slate-600 dark:to-purple-900" >
       <h3 class="artist-q">How well do you know <span class="artist-name">{{ name }}</span>?</h3>
       <img :src="img" class="artist-img" />
-      <button @click="makePlaylist" v-if="loggedIn && playlistUrl === null" class="btn btn-green-shadow text-lg flex items-center justify-between gap-2">
+      <button @click="makePlaylist" v-if="loggedIn && avatarUrl === '' && playlistUrl === null" class="btn btn-green-shadow text-lg flex items-center justify-between gap-2">
         <img :src="avatarUrl" class="w-10 rounded-full" />
         Make a playlist
       </button>
