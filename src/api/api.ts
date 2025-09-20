@@ -1,78 +1,147 @@
-async function callAPI(url: string, token: string, props?: object) {
-    const data = await fetch(`https://api.spotify.com/v1/${url}`,
-        {
-            headers: {
-                "Authorization": `Bearer ${token}`,
-                "Content-Type": "application/json",
-            },
-            ...props,
+const FLASK_API_URL = import.meta.env.VITE_FLASK_API_URL || 'http://localhost:5000';
+
+export async function getSongs(artist: string, limit: number, hipster: boolean, token: string) {
+    try {
+        const params = new URLSearchParams({
+            artist,
+            limit: limit.toString(),
+            hipster: hipster.toString(),
+            token
         });
 
+        const response = await fetch(`${FLASK_API_URL}/songs?${params}`);
+        const data = await response.json();
+
+        if (response.ok) {
+            return data;
+        }
+        return [];
+    } catch (e) {
+        return [];
+    }
+}
+
+export async function getUserTopArtists(token: string) {
     try {
-        return await data.json();
+        const params = new URLSearchParams({ token });
+        const response = await fetch(`${FLASK_API_URL}/artists/top?${params}`);
+        const data = await response.json();
+
+        if (response.ok) {
+            return data;
+        }
+        return [];
+    } catch (e) {
+        return [];
+    }
+}
+
+export async function getCurrentArtist(token: string) {
+    try {
+        const params = new URLSearchParams({ token });
+        const response = await fetch(`${FLASK_API_URL}/artists/current?${params}`);
+        const data = await response.json();
+
+        if (response.ok) {
+            return data;
+        }
+        return null;
+    } catch (e) {
+        return null;
+    }
+}
+
+export async function getArtist(id: string, token: string) {
+    try {
+        const params = new URLSearchParams({ id, token });
+        const response = await fetch(`${FLASK_API_URL}/artists?${params}`);
+        const data = await response.json();
+
+        if (response.ok) {
+            return data;
+        }
+        return {};
     } catch (e) {
         return {};
     }
 }
 
-export async function getSongs(artist: string, limit: number, hipster: boolean, token: string) {
-    const escaped = encodeURIComponent(artist);
-    let filteredSongs: any[] = [];
-    let offset = 0;
-    while (filteredSongs.length < limit && offset < 1000) {
-        const songs = await callAPI(`search?q=artist:${escaped}%20${hipster ? "tag:hipster" : ""}&type=track&limit=50&offset=${offset}`, token);
-        filteredSongs = filteredSongs.concat(songs.tracks.items.filter((song: any) => song.album.album_type !== "compilation"));
-        offset += 50;
-        if (songs.length === 0) break;
-    }
-    return filteredSongs;
-}
-
-export async function getUserTopArtists(token: string) {
-    const json = await callAPI("me/top/artists", token);
-    return json?.["items"].map((artist: any) => artist?.["name"] ?? '') ?? [];
-}
-
-export async function getCurrentArtist(token: string) {
-    const json = await callAPI("me/player/currently-playing", token);
-    return json?.["item"]?.["artists"]?.[0]?.["name"] ?? null;
-}
-
-export async function getArtist(id: string, token: string) {
-    return await callAPI(`artists/${id}`, token);
-}
-
 export async function getUser(token: string): Promise<[string, string]> {
-    const json = await callAPI("me", token);
-    const img = json["images"].length > 0 ? json["images"][0]["url"] : null;
-    return [json["id"], img];
+    try {
+        const params = new URLSearchParams({ token });
+        const response = await fetch(`${FLASK_API_URL}/user?${params}`);
+        const data = await response.json();
+
+        if (response.ok && Array.isArray(data) && data.length === 2) {
+            return [data[0], data[1]];
+        }
+        return ['', ''];
+    } catch (e) {
+        return ['', ''];
+    }
 }
 
 export async function createPlaylist(artist: string, id: string, token: string) {
-    const json = await callAPI(`users/${id}/playlists`, token,
-        {
+    try {
+        const response = await fetch(`${FLASK_API_URL}/playlist`, {
             method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
             body: JSON.stringify({
-                "name": `${artist}'s Hidden Gems`,
-                "description": `A playlist of ${artist}'s hidden gems`,
-                "public": false
+                artist,
+                id,
+                token
             })
         });
 
-    return { id: json["id"], uri: json["uri"], external_url: json["external_urls"]["spotify"] };
+        const data = await response.json();
+
+        if (response.ok) {
+            return data;
+        }
+        return { id: '', uri: '', external_url: '' };
+    } catch (e) {
+        return { id: '', uri: '', external_url: '' };
+    }
 }
 
 export async function getPlaylist(id: string, token: string) {
-    const json = await callAPI(`playlists/${id}`, token);
-    return { img: json["images"][0]["url"] };
+    try {
+        const params = new URLSearchParams({ id, token });
+        const response = await fetch(`${FLASK_API_URL}/playlist?${params}`);
+        const data = await response.json();
+
+        if (response.ok) {
+            return data;
+        }
+        return { img: '' };
+    } catch (e) {
+        return { img: '' };
+    }
 }
 
 export async function addSongsToPlaylist(playlist_id: string, songs: string[], token: string) {
-    return await callAPI(`playlists/${playlist_id}/tracks`, token,
-        {
-            method: "POST",
+    try {
+        const response = await fetch(`${FLASK_API_URL}/playlist`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json"
+            },
             body: JSON.stringify({
-                "uris": songs
+                playlist_id,
+                songs,
+                token
             })
         });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            return data;
+        }
+        return {};
+    } catch (e) {
+        return {};
+    }
 }

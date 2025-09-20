@@ -34,7 +34,7 @@ async function setRefreshToken(code: string): Promise<string> {
 
 async function getAccessToken(): Promise<string> {
   let r_token = sessionStorage.getItem('r_token');
-  const code = Auth.getAuthCode();
+  const code = await Auth.getAuthCode();
   if (code && !r_token)
     r_token = await setRefreshToken(code);
 
@@ -61,7 +61,7 @@ onMounted(async () => {
     sessionStorage.removeItem('query');
   }
   const r_token = sessionStorage.getItem('r_token');
-  const auth_code = Auth.getAuthCode();
+  const auth_code = await Auth.getAuthCode();
   if (auth_code) {
     loggedIn.value = true;
   } else if (r_token) {
@@ -169,7 +169,7 @@ watch([idx, userId, topArtists], (new_values, _) => {
 );
 
 async function makePlaylist() {
-  const auth_code = Auth.getAuthCode();
+  const auth_code = await Auth.getAuthCode();
   const r_token = sessionStorage.getItem('r_token');
   if (!auth_code && !r_token) {
     sessionStorage.setItem('query', promptValue.value);
