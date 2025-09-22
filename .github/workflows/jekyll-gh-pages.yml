@@ -94,11 +94,23 @@ jobs:
         sudo ln -sf /etc/nginx/sites-available/flask-app /etc/nginx/sites-enabled/
         sudo rm -f /etc/nginx/sites-enabled/default
         
-    - name: Verify frontend build
+    - name: Verify frontend build and set permissions
       run: |
         if [ -d "frontend/dist" ]; then
           echo "✅ Frontend built successfully"
           ls -la frontend/dist/
+
+          # Set proper permissions for nginx to access files
+          sudo chmod -R 755 /home/runner/work/${{ github.event.repository.name }}/${{ github.event.repository.name }}/frontend/dist
+          sudo chown -R www-data:www-data /home/runner/work/${{ github.event.repository.name }}/${{ github.event.repository.name }}/frontend/dist
+
+          # Ensure nginx can traverse the directory path
+          sudo chmod 755 /home/runner
+          sudo chmod 755 /home/runner/work
+          sudo chmod 755 /home/runner/work/${{ github.event.repository.name }}
+          sudo chmod 755 /home/runner/work/${{ github.event.repository.name }}/${{ github.event.repository.name }}
+          sudo chmod 755 /home/runner/work/${{ github.event.repository.name }}/${{ github.event.repository.name }}/frontend
+
         else
           echo "❌ Frontend build directory not found"
           exit 1
@@ -147,14 +159,14 @@ jobs:
         echo "Testing application endpoints..."
         
         # Test main page
-        if curl -f -s http://localhost/ > /dev/null; then
+        if curl -f -s https://pgrad.github.com/HiddenGems/ > /dev/null; then
           echo "✅ Main page is accessible"
         else
           echo "❌ Main page failed"
         fi
         
         # Test API endpoint (adjust as needed)
-        if curl -f -s http://localhost/api/health > /dev/null 2>&1; then
+        if curl -f -s https://pgrad.github.com/HiddenGems/api/songs > /dev/null 2>&1; then
           echo "✅ API endpoint is accessible"
         else
           echo "⚠️  API health endpoint not found (this may be expected)"
@@ -181,33 +193,3 @@ jobs:
         # Run your test suite
         # pipenv run python -m pytest tests/
         echo "Backend tests would run here"
-        
-    - name: Cleanup
-      if: always()
-      run: |
-        # Stop services
-        if [ -f /tmp/gunicorn.pid ]; then
-          sudo kill $(cat /tmp/gunicorn.pid) || true
-          rm -f /tmp/gunicorn.pid
-        fi
-        
-        sudo systemctl stop nginx || true
-        
-        # Clean up socket file
-        rm -f /tmp/flask-app.sock
-
-  # Production deployment job (optional)
-  deploy-production:
-    needs: build-and-deploy
-    runs-on: [ubuntu-latest]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    
-    steps:
-    - name: Deploy to production server
-      run: |
-        echo "This is where you would deploy to your production server"
-        echo "Consider using tools like:"
-        echo "- SSH deployment scripts"
-        echo "- Docker containers"
-        echo "- Cloud deployment actions"
-        echo "- Infrastructure as Code (Terraform, etc.)"
