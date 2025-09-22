@@ -53,6 +53,7 @@ jobs:
         CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
         HOST: ${{ secrets.HOST }}
       run: |
+        echo "VITE_FLASK_API_URL=$API_URL" > .env.local
         echo "VITE_SPOTIFY_CLIENT_ID=$CLIENT_ID" > .env.local
         echo "VITE_SPOTIFY_CLIENT_SECRET=$CLIENT_SECRET" >> .env.local
         echo "VITE_HOST=$HOST" >> .env.local
