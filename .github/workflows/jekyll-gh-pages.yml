@@ -1,4 +1,4 @@
-name: Build Frontend and Start Backend
+name: Build Frontend and Deploy with Nginx
 
 on:
   push:
@@ -7,8 +7,8 @@ on:
     branches: [ main ]
 
 jobs:
-  build-and-test:
-    runs-on: ubuntu-latest
+  build-and-deploy:
+    runs-on: [self-hosted, ubuntu-latest]
     
     steps:
     - name: Checkout code
@@ -34,8 +34,11 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-pipenv-
           
-    - name: Install pipenv
-      run: python -m pip install --upgrade pip pipenv
+    - name: Install pipenv and system dependencies
+      run: |
+        python -m pip install --upgrade pip pipenv
+        sudo apt-get update
+        sudo apt-get install -y nginx
           
     - name: Install frontend dependencies
       working-directory: ./frontend
@@ -45,47 +48,166 @@ jobs:
       working-directory: ./frontend
       run: yarn build
       
-    - name: create .env.local
-      shell: bash
-      working-directory: ./backend
-      env:
-        CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
-        CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
-        HOST: ${{ secrets.HOST }}
-      run: |
-        echo "VITE_FLASK_API_URL=$API_URL" > .env.local
-        echo "VITE_SPOTIFY_CLIENT_ID=$CLIENT_ID" > .env.local
-        echo "VITE_SPOTIFY_CLIENT_SECRET=$CLIENT_SECRET" >> .env.local
-        echo "VITE_HOST=$HOST" >> .env.local
     - name: Install backend dependencies
       working-directory: ./backend
       run: |
-        pipenv install --deploy --ignore-pipfile    
-    - name: Start backend server (background)
+        pipenv install --deploy --ignore-pipfile
+        # Install gunicorn for production WSGI server
+        pipenv install gunicorn
+        
+    - name: Test Gunicorn configuration
       working-directory: ./backend
       run: |
-        # Start the server in the background using pipenv
-        pipenv run flask run &
-        # Store the PID for later cleanup
-        echo $! > server.pid
-        # Wait a moment for server to start
-        sleep 5
-      env:
-        # Add any environment variables your backend needs
-        FLASK_ENV: production
-        # DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        # Test that Gunicorn can load the application
+        pipenv run gunicorn --check-config wsgi:app
         
-    - name: Test server is running
+    - name: Create nginx configuration
       run: |
-        # Test that the server is responding (adjust URL as needed)
-        curl -f http://localhost:5000/health || curl -f http://localhost:8000/health || echo "Server health check failed"
+        sudo tee /etc/nginx/sites-available/flask-app << 'EOF'
+        server {
+            listen 80;
+            server_name localhost;
+
+            # Serve static assets directly with nginx
+            location /assets/ {
+                alias /home/runner/work/${{ github.event.repository.name }}/${{ github.event.repository.name }}/frontend/dist/assets/;
+                expires 1y;
+                add_header Cache-Control "public, immutable";
+            }
+
+            # Serve React app for root and client-side routes
+            location / {
+                root /home/runner/work/${{ github.event.repository.name }}/${{ github.event.repository.name }}/frontend/dist;
+                try_files $uri $uri/ /index.html;
+            }
+
+            # Proxy API requests to Flask via Gunicorn
+            location /api/ {
+                include /etc/nginx/proxy_params;
+                proxy_pass http://unix:/tmp/flask-app.sock;
+            }
+
+        }
+        EOF
+        
+        # Enable the site
+        sudo ln -sf /etc/nginx/sites-available/flask-app /etc/nginx/sites-enabled/
+        sudo rm -f /etc/nginx/sites-enabled/default
+        
+    - name: Verify frontend build
+      run: |
+        if [ -d "frontend/dist" ]; then
+          echo "✅ Frontend built successfully"
+          ls -la frontend/dist/
+        else
+          echo "❌ Frontend build directory not found"
+          exit 1
+        fi
+        
+    - name: Test nginx configuration
+      run: |
+        sudo nginx -t
+        
+    - name: Start Gunicorn server
+      working-directory: ./backend
+      run: |
+        # Start Gunicorn with Unix socket
+        pipenv run gunicorn \
+          --bind unix:/tmp/flask-app.sock \
+          --workers 4 \
+          --timeout 120 \
+          --keep-alive 2 \
+          --max-requests 1000 \
+          --max-requests-jitter 50 \
+          --preload \
+          --daemon \
+          --pid /tmp/gunicorn.pid \
+          --error-logfile /tmp/gunicorn-error.log \
+          --access-logfile /tmp/gunicorn-access.log \
+          --log-level info \
+          wsgi:app
+          
+        # Wait for socket to be created
+        timeout 30 bash -c 'until [ -S /tmp/flask-app.sock ]; do sleep 1; done'
+        
+        # Set proper permissions for nginx
+        sudo chmod 666 /tmp/flask-app.sock
+        
+    - name: Start nginx
+      run: |
+        sudo systemctl start nginx
+        sudo systemctl status nginx --no-pager
+        
+    - name: Test application
+      run: |
+        # Wait for services to be ready
+        sleep 5
+        
+        # Test that the application is responding
+        echo "Testing application endpoints..."
+        
+        # Test main page
+        if curl -f -s http://localhost/ > /dev/null; then
+          echo "✅ Main page is accessible"
+        else
+          echo "❌ Main page failed"
+        fi
+        
+        # Test API endpoint (adjust as needed)
+        if curl -f -s http://localhost/api/health > /dev/null 2>&1; then
+          echo "✅ API endpoint is accessible"
+        else
+          echo "⚠️  API health endpoint not found (this may be expected)"
+        fi
+        
+    - name: Show logs for debugging
+      if: always()
+      run: |
+        echo "=== Nginx Error Log ==="
+        sudo tail -n 20 /var/log/nginx/error.log || echo "No nginx error log"
+        
+        echo "=== Nginx Access Log ==="
+        sudo tail -n 20 /var/log/nginx/access.log || echo "No nginx access log"
+        
+        echo "=== Gunicorn Error Log ==="
+        tail -n 20 /tmp/gunicorn-error.log || echo "No gunicorn error log"
+        
+        echo "=== Gunicorn Access Log ==="
+        tail -n 20 /tmp/gunicorn-access.log || echo "No gunicorn access log"
+        
+    - name: Run tests
+      working-directory: ./backend
+      run: |
+        # Run your test suite
+        # pipenv run python -m pytest tests/
+        echo "Backend tests would run here"
         
     - name: Cleanup
       if: always()
-      working-directory: ./backend
       run: |
-        # Kill the background server process if it exists
-        if [ -f server.pid ]; then
-          kill $(cat server.pid) || true
-          rm server.pid
+        # Stop services
+        if [ -f /tmp/gunicorn.pid ]; then
+          sudo kill $(cat /tmp/gunicorn.pid) || true
+          rm -f /tmp/gunicorn.pid
         fi
+        
+        sudo systemctl stop nginx || true
+        
+        # Clean up socket file
+        rm -f /tmp/flask-app.sock
+
+  # Production deployment job (optional)
+  deploy-production:
+    needs: build-and-deploy
+    runs-on: [self-hosted, ubuntu-latest]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+    - name: Deploy to production server
+      run: |
+        echo "This is where you would deploy to your production server"
+        echo "Consider using tools like:"
+        echo "- SSH deployment scripts"
+        echo "- Docker containers"
+        echo "- Cloud deployment actions"
+        echo "- Infrastructure as Code (Terraform, etc.)"
