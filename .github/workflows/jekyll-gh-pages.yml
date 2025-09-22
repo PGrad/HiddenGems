@@ -1,70 +1,90 @@
-name: Build vue project and deploy to Github pages
+name: Build Frontend and Start Backend
 
 on:
-  # Runs on pushes targeting the default branch
   push:
-    branches: ["main"]
-
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
-
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-# Allow one concurrent deployment
-concurrency:
-  group: "pages"
-  cancel-in-progress: true
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
-  # Build job
-  build:
+  build-and-test:
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        node-version: [20.x]
-
+    
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Setup Pages
-        uses: actions/configure-pages@v2
-      - name: Setup Node ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ matrix.node-version }}
-      - name: create .env.local
-        shell: bash
-        env:
-          CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
-          CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
-          HOST: ${{ secrets.HOST }}
-        run: |
-          echo "VITE_SPOTIFY_CLIENT_ID=$CLIENT_ID" > .env.local
-          echo "VITE_SPOTIFY_CLIENT_SECRET=$CLIENT_SECRET" >> .env.local
-          echo "VITE_HOST=$HOST" >> .env.local
-      - name: yarn install and build
-        run: |
-          yarn install
-          yarn build
-          mv dist _site
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3.0.1
-        with:
-          path: _site
-
-  # Deployment job
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'yarn'
+        cache-dependency-path: frontend/yarn.lock
+        
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Cache pipenv dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pipenv
+        key: ${{ runner.os }}-pipenv-${{ hashFiles('backend/Pipfile.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-pipenv-
+          
+    - name: Install pipenv
+      run: python -m pip install --upgrade pip pipenv
+          
+    - name: Install frontend dependencies
+      working-directory: ./frontend
+      run: yarn install --frozen-lockfile
+      
+    - name: Build frontend
+      working-directory: ./frontend
+      run: yarn build
+      
+    - name: create .env.local
+      shell: bash
+      working-directory: ./backend
+      env:
+        CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
+        CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
+        HOST: ${{ secrets.HOST }}
+      run: |
+        echo "VITE_SPOTIFY_CLIENT_ID=$CLIENT_ID" > .env.local
+        echo "VITE_SPOTIFY_CLIENT_SECRET=$CLIENT_SECRET" >> .env.local
+        echo "VITE_HOST=$HOST" >> .env.local
+    - name: Install backend dependencies
+      working-directory: ./backend
+      run: |
+        pipenv install --deploy --ignore-pipfile    
+    - name: Start backend server (background)
+      working-directory: ./backend
+      run: |
+        # Start the server in the background using pipenv
+        pipenv run flask run &
+        # Store the PID for later cleanup
+        echo $! > server.pid
+        # Wait a moment for server to start
+        sleep 5
+      env:
+        # Add any environment variables your backend needs
+        FLASK_ENV: production
+        # DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        
+    - name: Test server is running
+      run: |
+        # Test that the server is responding (adjust URL as needed)
+        curl -f http://localhost:5000/health || curl -f http://localhost:8000/health || echo "Server health check failed"
+        
+    - name: Cleanup
+      if: always()
+      working-directory: ./backend
+      run: |
+        # Kill the background server process if it exists
+        if [ -f server.pid ]; then
+          kill $(cat server.pid) || true
+          rm server.pid
+        fi

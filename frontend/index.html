@@ -54,13 +54,5 @@
     <script type="module" src="/src/main.ts"></script>
     <script src="https://open.spotify.com/embed-podcast/iframe-api/v1" async></script>
 
-    <script>
-      // Add the PWA service worker here.
-      if (!navigator.serviceWorker.controller) {
-        navigator.serviceWorker.register("/sw.js").then(function(reg) {
-          console.log("Service worker has been registered for scope: " + reg.scope);
-        });
-      }
-    </script>
   </body>
 </html>

@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+instance/
+.flaskenv
+.vscode/
+
+# Editor/OS specific
+.DS_Store
+Thumbs.db
+
+# Dependencies
+node_modules/
+
+# Database
+*.sqlite
+*.db
+
+# Uploads
+uploads/
+
+# Logs
+*.log

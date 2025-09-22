@@ -1,4 +1,4 @@
-const FLASK_API_URL = import.meta.env.VITE_FLASK_API_URL || 'http://localhost:5000';
+const FLASK_API_URL = import.meta.env.VITE_FLASK_API_URL || 'http://localhost:5173/api';
 
 export async function getSongs(artist: string, limit: number, hipster: boolean, token: string) {
     try {
