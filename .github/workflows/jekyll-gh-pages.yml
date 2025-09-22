@@ -8,7 +8,7 @@ on:
 
 jobs:
   build-and-deploy:
-    runs-on: [self-hosted, ubuntu-latest]
+    runs-on: [ubuntu-latest]
     
     steps:
     - name: Checkout code
@@ -199,7 +199,7 @@ jobs:
   # Production deployment job (optional)
   deploy-production:
     needs: build-and-deploy
-    runs-on: [self-hosted, ubuntu-latest]
+    runs-on: [ubuntu-latest]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     
     steps:
